@@ -1,16 +1,16 @@
 {
   "default": {
-     "tags": "@smoke",
+     "tags": "@smoke or @login or @regression or @negative",
     "formatOptions": {
       "snippetsInterface": "async-await"
     },
     "paths": [
-      "src/test/features/login.feature"
+      "src/test/features/transaction.feature"
     ],
     "dryRun": false,
     "require": [
       "src/test/steps/*.ts",
-      "src/test/utils/hooks.ts"
+      "src/test/hooks/hooks.ts"
     ],
     "requireModule": [
       "ts-node/register"
@@ -21,7 +21,7 @@
       "rerun:@rerun.txt"
     ],
     "timeout": 60000,
-    "parallel": 2
+    "parallel": 0
   },
   "rerun": {
     "formatOptions": {
@@ -31,7 +31,7 @@
     "dryRun": false,
     "require": [
       "src/test/steps/*.ts",
-      "src/test/utils/hooks.ts"
+      "src/test/hooks/hooks.ts"
     ],
     "requireModule": [
       "ts-node/register"
@@ -42,6 +42,6 @@
       "rerun:@rerun.txt"
     ],
     "timeout": 60000,
-    "parallel": 2
+    "parallel": 0
   }
 }

@@ -5,13 +5,13 @@ module.exports = {
             snippentInterface: "async-await"
         },
         paths:[
-            "src/test/features/*.feature"
+            "src/test/features/transaction.feature"
         ],
         publishQuite: true,
         dryRun: false,
         require:[
-            "src/test/steps/*.ts",
-            "src/test/utils/*.ts"
+            "src/test/hooks/hooks.ts",
+            "src/test/steps/*.ts"
         ],
         requireModule:[
             "ts-node/register"
@@ -21,7 +21,7 @@ module.exports = {
             "json:test-result/cucumber-report.json",
             "rerun:@rerun.txt"
         ],
-        parallel: 2
+        parallel: 0
     },
     rerun:{
         formateOptions:{
@@ -41,6 +41,6 @@ module.exports = {
             "json:test-result/cucumber-report.json",
             "rerun:@rerun.txt"
         ],
-        parallel: 2
+        parallel: 0
     }
 }

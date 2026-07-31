@@ -1,11 +1,14 @@
 import { pageFixture } from "../utils/pageFixture";
-import { expect } from '@playwright/test';
+import { expectContainsText, expectText, expectVisible } from '../utils/common';
 
 export default class LoginPage {
     private selectors = {
         email: 'input[id="email"]',
         password: 'input[id="password"]',
-        submitButton: 'button[type="submit"]'
+        submitButton: 'button[type="submit"]',
+        adminTitle: 'h1.text-lg.font-semibold',
+        loginErrorText: `Your email and password didn't match. Please try again.`,
+        loginErrorBox: 'div[class*="border-red-500"][class*="text-red-400"]'
     }
 
     async enterEmail(email: string) {
@@ -32,22 +35,24 @@ export default class LoginPage {
     try {
         await pageFixture.page.waitForLoadState('networkidle');
 
-        const errorLocator = pageFixture.page
-            .locator('//div[contains(@class,"border-red-500") and normalize-space()="User not found"]');
+        const expected = this.selectors.loginErrorText;
+        const textLocator = pageFixture.page.getByText(expected, { exact: true });
+        const boxLocator = pageFixture.page.locator(this.selectors.loginErrorBox);
 
-        // Assertion 1 - Error div is visible
-        await expect(errorLocator)
-            .toBeVisible({ timeout: 30000 });
+        try {
+            await Promise.race([
+                textLocator.waitFor({ state: 'visible', timeout: 30000 }),
+                boxLocator.waitFor({ state: 'visible', timeout: 30000 })
+            ]);
 
-        // Assertion 2 - Contains correct text
-        await expect(errorLocator)
-            .toContainText('User not found');
-
-        // Assertion 3 - Exact text match
-        await expect(errorLocator)
-            .toHaveText('User not found');
-
-        await pageFixture.logger.info(`Error message verified: User not found`);
+            if (await textLocator.count() > 0) {
+                await expectText(textLocator, expected, 'Login error text');
+            } else {
+                await expectContainsText(boxLocator, expected, 'Login error box');
+            }
+        } catch (error) {
+            throw error;
+        }
 
     } catch (error) {
         await pageFixture.page.screenshot({
@@ -60,13 +65,11 @@ export default class LoginPage {
 
     async verifyAdminLoginSuccess() {
         try {
-            await pageFixture.page
-                .getByText('MoiPay', { exact: true })
-                .waitFor({ state: 'visible', timeout: 10000 });
-
-                pageFixture.logger.info("Admin login successful");
+            const titleLocator = pageFixture.page.locator(this.selectors.adminTitle, { hasText: 'Dashboard' });
+            await expectText(titleLocator, 'Dashboard', 'Admin dashboard title');
+            pageFixture.logger.info("Admin login successful");
         } catch (error) {
-                pageFixture.logger.error("Admin login failed");
+            pageFixture.logger.error("Admin login failed");
             throw new Error("Admin login failed");
         }
     }
