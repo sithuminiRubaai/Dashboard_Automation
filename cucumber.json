@@ -1,16 +1,16 @@
 {
   "default": {
-     "tags": "@smoke",
+     "tags": "@smoke or @login or @regression or @negative",
     "formatOptions": {
       "snippetsInterface": "async-await"
     },
     "paths": [
-      "src/test/features/login.feature"
+      "src/test/features/*.feature"
     ],
     "dryRun": false,
     "require": [
       "src/test/steps/*.ts",
-      "src/test/utils/hooks.ts"
+      "src/test/hooks/hooks.ts"
     ],
     "requireModule": [
       "ts-node/register"
@@ -31,7 +31,7 @@
     "dryRun": false,
     "require": [
       "src/test/steps/*.ts",
-      "src/test/utils/hooks.ts"
+      "src/test/hooks/hooks.ts"
     ],
     "requireModule": [
       "ts-node/register"
