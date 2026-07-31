@@ -1,5 +1,4 @@
 import { pageFixture } from "../utils/pageFixture";
-import { expect } from '@playwright/test';
 import { expectContainsText, expectText, expectVisible } from '../utils/common';
 
 export default class LoginPage {

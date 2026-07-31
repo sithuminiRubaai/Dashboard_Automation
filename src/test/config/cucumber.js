@@ -5,7 +5,7 @@ module.exports = {
             snippentInterface: "async-await"
         },
         paths:[
-            "src/test/features/kyc.feature"
+            "src/test/features/transaction.feature"
         ],
         publishQuite: true,
         dryRun: false,
@@ -21,7 +21,7 @@ module.exports = {
             "json:test-result/cucumber-report.json",
             "rerun:@rerun.txt"
         ],
-        parallel: 2
+        parallel: 0
     },
     rerun:{
         formateOptions:{
@@ -41,6 +41,6 @@ module.exports = {
             "json:test-result/cucumber-report.json",
             "rerun:@rerun.txt"
         ],
-        parallel: 2
+        parallel: 0
     }
 }

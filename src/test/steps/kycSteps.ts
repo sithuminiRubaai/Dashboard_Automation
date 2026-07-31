@@ -4,6 +4,7 @@ import KYCPage from '../pageObjects/KYCPage';
 import { expect } from '@playwright/test';
 import LoginPage from '../pageObjects/LoginPage';
 
+
 const kycPage = new KYCPage();
 const loginPage = new LoginPage();
 

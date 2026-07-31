@@ -2,8 +2,8 @@ Feature: KYC (Know Your Customer) Management
 
 @smoke @kyc
 Scenario: Verify KYC Requests page is displayed
-  Given user is logged in to the admin dashboard
-  And user clicks KYC Management
+ Given user is logged in to the admin dashboard
+  And user clicks KYC Management 
   Then verify KYC Requests heading is visible
   And verify summary cards are visible
 
