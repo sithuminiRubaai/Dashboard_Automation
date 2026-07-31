@@ -1,8 +1,0 @@
-info: Jun-17-2026 16:00:13: 	Opening Browser https://aws-dev.d11zg0rn02l7j9.amplifyapp.com/login
-info: Jun-17-2026 16:00:13: 	providing email
-info: Jun-17-2026 16:00:13: 	providing password
-info: Jun-17-2026 16:00:14: 	clicking submit button
-error: Jun-17-2026 16:00:29: 	Login error message not displayed: TimeoutError: locator.waitFor: Timeout 10000ms exceeded.
-Call log:
-[2m  - waiting for locator('//div[normalize-space()="User not found"]') to be visible[22m
-
