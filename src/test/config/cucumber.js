@@ -5,7 +5,7 @@ module.exports = {
             snippentInterface: "async-await"
         },
         paths:[
-            "src/test/features/transaction.feature"
+            "src/test/features/kyc.feature"
         ],
         publishQuite: true,
         dryRun: false,

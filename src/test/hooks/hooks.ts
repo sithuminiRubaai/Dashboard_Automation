@@ -19,6 +19,7 @@ setDefaultTimeout(60 * 1000);
 let browser: Browser;
 let context: BrowserContext;
 let page: Page;
+let currentFeatureName: string | null = null;
 
 BeforeAll(async function () {
     getENV();
@@ -44,8 +45,28 @@ BeforeAll(async function () {
 });
 
 Before(async function ({ pickle }) {
-    pageFixture.page = page;
-    pageFixture.logger = createLogger(options(pickle.name));
+    const featureName = pickle.uri?.split(/[\\/]/).pop()?.replace(/\.feature$/, "") || "default";
+
+    if (currentFeatureName !== featureName) {
+        if (page) {
+            await page.close();
+        }
+
+        page = await context.newPage();
+        pageFixture.page = page;
+        currentFeatureName = featureName;
+
+        const loginUrl = getLoginUrl();
+        await page.goto(loginUrl, {
+            waitUntil: "networkidle"
+        });
+
+        pageFixture.logger = createLogger(options(pickle.name));
+        pageFixture.logger.info(`Started feature ${featureName} in the shared browser session`);
+    } else {
+        pageFixture.page = page;
+        pageFixture.logger = createLogger(options(pickle.name));
+    }
 });
 
 After(async function ({ pickle, result }) {

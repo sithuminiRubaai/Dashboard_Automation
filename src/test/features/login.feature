@@ -1,7 +1,5 @@
 Feature: login page validation
 
-Background:
-
 @smoke @login @negative
   Scenario: Failed login with invalid credentials
     When provide invalid email and password
@@ -15,24 +13,24 @@ Background:
     And verify admin login success
     Then logout from the application
 
-# @smoke @login
-#  Scenario Outline: verify login success message
-#     When enter email as "<email>"
-#     And enter password as "<password>"
-#     Then click on login button
-#     Then logout from the application
+@smoke @login
+ Scenario: verify login success message
+    When enter email as "super_admin@gmail.com"
+    And enter password as "Admin@2024!"
+    Then click on login button
+    And verify admin login success
+    Then logout from the application
    
 
-# @smoke @login @regression
-#  Scenario Outline: Login with multiple credentials
-#     When provide valid email as "<email>" and password as "<password>"
-#     Then click on login button
-#     And verify admin login success
-#     Then logout from the application
+@smoke @login @regression
+ Scenario Outline: Login with multiple credentials
+    When provide valid email as "<email>" and password as "<password>"
+    Then click on login button
+    And verify admin login success
+    Then logout from the application
 
-# Examples:
-#   | email                   | password       |
-#   | super_admin@gmail.com   | Admin@2024!    |
-
-
-  
+Examples:
+  | email                           | password               |
+  | super_admin@gmail.com           | Admin@2024!            |
+  | fofov89169@lovadio.com          | Admin@2024!            | 
+  | customerservice@inboxorigin.com | Admin@2024!Admin@2024! |
