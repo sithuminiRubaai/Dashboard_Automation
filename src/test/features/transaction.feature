@@ -8,6 +8,8 @@ Scenario Outline: User can navigate to different payment tabs
     When user clicks the "<PaymentTab>" payment tab
     Then the "<PaymentTab>" payment tab should be displayed
 
+
+
 Examples:
 | PaymentTab      |
 | Top Up          |

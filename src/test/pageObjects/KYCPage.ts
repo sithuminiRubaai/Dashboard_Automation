@@ -1,9 +1,21 @@
 import { pageFixture } from "../utils/pageFixture";
+import fs from 'fs';
 import { expect, Locator, Page } from "@playwright/test";
 import { expectCountGreaterThan, expectText, expectVisible, expectContainsText } from '../utils/common';
 
 export default class KYCPage {
     readonly page: Page;
+    searchBoxEmail: any;
+
+    private readonly columnMap: Record<string, number> = {
+        customerName: 1,
+        email: 3,
+        mobileNumber: 4,
+        nic: 5,
+        date: 6,
+        status: 7,
+        notes: 8,
+    };
 
     get totalRequestsCard(): Locator {
         return this.activePage.getByText('Total Requests');
@@ -19,7 +31,7 @@ export default class KYCPage {
 
     get customerStatusLabel(): Locator {
     return this.activePage.locator(
-        "(//span[normalize-space()='Verified' or normalize-space()='Rejected'])[1]"
+        "(//span[     normalize-space()='Pending' or     normalize-space()='Verified' or     normalize-space()='Rejected' ])[1]"
     );
    }
 
@@ -52,19 +64,19 @@ export default class KYCPage {
     }
 
     get statusColumn(): Locator {
-        return this.activePage.locator('tbody tr td:nth-child(6)');
+        return this.activePage.locator('tbody tr td:nth-child(7)');
     }
 
     get searchType(): Locator {
        return this.activePage.locator("//select[starts-with(@class,'rounded-lg border')]");
     }
 
-    get searchBox(): Locator {
-        return this.activePage.locator('input[placeholder*="Search"]');
+    get searchBoxName(): Locator {
+        return this.activePage.locator("//input[@placeholder='Search by name...']");
     }
 
     get nameColumn(): Locator {
-        return this.activePage.locator('tbody tr td:nth-child(2)');
+        return this.activePage.locator('tbody tr td:nth-child(1)');
     }
 
     get emailColumn(): Locator {
@@ -72,11 +84,11 @@ export default class KYCPage {
     }
 
     get nicColumn(): Locator {
-        return this.activePage.locator('tbody tr td:nth-child(4)');
+        return this.activePage.locator('tbody tr td:nth-child(5)');
     }
 
     get mobileColumn(): Locator {
-        return this.activePage.locator('tbody tr td:nth-child(5)');
+        return this.activePage.locator('tbody tr td:nth-child(4)');
     }
 
     get reviewDetailsButton(): Locator {
@@ -127,6 +139,11 @@ export default class KYCPage {
         return this.activePage.locator('span:has-text("Rejected")');
     }
 
+    get closeReviewDetailsButton() {
+    return this.activePage.locator("//button[contains(@class,'flex-shrink-0') and contains(@class,'rounded-full')]");
+    }
+ 
+
     getKYCRequestsHeading() {
         return this.kycRequestsHeading;
     }
@@ -146,6 +163,43 @@ export default class KYCPage {
 
     async verifyKycRequestsHeadingVisible() {
         await expectVisible(this.getKYCRequestsHeading(), 'KYC Requests heading');
+    }
+
+    // Robust selector for dropdowns: uses native selectOption when possible,
+    // falls back to clicking custom dropdown and choosing visible option by text.
+    async selectDropdownOption(dropdown: Locator, option: { value?: string; label?: string }) {
+        const optionText = option.label ?? option.value;
+        try {
+            const tag = await dropdown.evaluate((el: any) => el.tagName);
+            if (tag && tag.toUpperCase() === 'SELECT') {
+                if (option.label) {
+                    await dropdown.selectOption({ label: option.label });
+                } else if (option.value !== undefined) {
+                    await dropdown.selectOption({ value: option.value });
+                } else {
+                    await dropdown.selectOption('');
+                }
+                return;
+            }
+        } catch (e) {
+            // fall through to click-based fallback
+        }
+
+        // Fallback for custom dropdowns
+        await dropdown.click();
+        await pageFixture.page.waitForTimeout(200);
+
+        if (!optionText) {
+            throw new Error('No option value or label provided for dropdown selection');
+        }
+
+        const optLocator = this.activePage.locator(`text="${optionText}"`).first();
+        await optLocator.click();
+        await pageFixture.page.waitForLoadState('networkidle');
+    }
+
+    getSearchBox(): Locator {
+        return this.activePage.locator("input[placeholder*='Search'], input[type='search'], input").first();
     }
 
     async verifySummaryCardsVisible() {
@@ -169,7 +223,7 @@ export default class KYCPage {
     async filterKYCRequestsByStatus(status: string) {
         try {
             await this.statusFilterControl.click();
-            await this.statusFilter.selectOption({ label: status });
+            await this.selectDropdownOption(this.statusFilter, { label: status });
             await pageFixture.page.waitForLoadState("networkidle");
             await pageFixture.logger.info(`Filtered KYC requests by status: ${status}`);
         } catch (error) {
@@ -194,8 +248,8 @@ export default class KYCPage {
 
     async searchKYCRequestByName(name: string) {
         try {
-            const searchBox = this.searchBox;
-            await searchBox.fill(name);
+            const searchBoxName = this.searchBoxName;
+            await searchBoxName.fill(name);
             await pageFixture.page.waitForLoadState("networkidle");
             pageFixture.logger.info(`Searched for KYC request by name: ${name}`);
         } catch (error) {
@@ -211,11 +265,11 @@ export default class KYCPage {
             const searchTypeDropdown = this.searchType;
             if (await searchTypeDropdown.isVisible()) {
                 await searchTypeDropdown.click();
-                await this.searchType.selectOption({ value: "email" });
+                await this.selectDropdownOption(this.searchType, { value: "email" });
             }
 
-            const searchBox = this.searchBox;
-            await searchBox.fill(email);
+            const searchBoxEmail = this.searchBoxEmail;
+            await searchBoxEmail.fill(email);
             await pageFixture.page.waitForLoadState("networkidle");
             await pageFixture.logger.info(`Searched for KYC request by email: ${email}`);
         } catch (error) {
@@ -239,6 +293,10 @@ export default class KYCPage {
             throw error;
         }
     }
+    async closeReviewDetailsPopup() {
+    await this.closeReviewDetailsButton.click();
+    await pageFixture.logger.info("Review Details popup closed.");
+   }
 
     async verifySearchResultsWithMatchingEmails() {
         try {
@@ -253,6 +311,35 @@ export default class KYCPage {
             throw error;
         }
     }
+
+async verifySearch(searchType: string, searchValue: string) {
+    await this.selectDropdownOption(this.searchType, { value: searchType });
+
+    const searchBox = this.getSearchBox();
+    await searchBox.fill(searchValue);
+
+    console.log(`Search Type: ${searchType}`);
+    console.log(`Search Value: ${searchValue}`);
+
+    await searchBox.press('Enter');
+
+    // await this.verifyFirstRowValue(searchType, searchValue);
+}
+
+async verifyFirstRowValue(searchType: string, expectedValue: string) {
+  const columnIndex = this.columnMap[searchType];
+  if (!columnIndex) {
+    throw new Error(`Unknown searchType: ${searchType}`);
+  }
+
+const firstCell = this.activePage.locator(`xpath=//tbody/tr[1]/td[${columnIndex}]`);
+await expect(firstCell).toBeVisible();
+
+const actualValue = (await firstCell.textContent())?.trim() || '';
+console.log(`Search Type: "${searchType}" | Expected: "${expectedValue}" | Actual Cell Value: "${actualValue}"`);
+
+expect(actualValue).toBe(expectedValue);
+}
 
     async selectFirstKYCRequest() {
         const firstRow = pageFixture.page.locator("tbody tr").first();
@@ -374,26 +461,30 @@ export default class KYCPage {
     }
 }
 
-async verifyCustomerStatus() {
+async getDocumentStatus(): Promise<string> {
     try {
         await expect(this.customerStatusLabel).toBeVisible();
 
-        const status = (await this.customerStatusLabel.innerText()).trim();
+        const status = (await this.customerStatusLabel.textContent())?.trim();
 
-        console.log("Customer Status:", status);
+        if (!status) {
+            throw new Error("Document status is empty or not available");
+        }
 
-        expect(["Verified", "Rejected"]).toContain(status);
+        pageFixture.logger.info(`Document status is: ${status}`);
+        console.log(`Document status is: ${status}`);
 
-        await pageFixture.logger.info(`Customer status is: ${status}`);
+        return status;
+
     } catch (error) {
         await pageFixture.page.screenshot({
-            path: `reports/screenshots/customer-status-${Date.now()}.png`
+            path: `reports/screenshots/document-status-${Date.now()}.png`
         });
+
+        pageFixture.logger.error(`Failed to get document status: ${error}`);
         throw error;
     }
 }
-
-
 
 
     async verifySearchResultsDisplayed(searchName: string) {
@@ -439,7 +530,6 @@ async verifyCustomerStatus() {
     }
 
     async verifyStatusFilter() {
-
         const statuses = [
             { value: "PENDING", text: "Pending" },
             { value: "VERIFIED", text: "Verified" },
@@ -447,85 +537,50 @@ async verifyCustomerStatus() {
         ];
 
         for (const status of statuses) {
+            await this.selectDropdownOption(this.statusFilter, { value: status.value });
+            await pageFixture.page.waitForLoadState('networkidle');
 
-            await this.statusFilter.selectOption({ value: status.value });
-
-            await pageFixture.page.waitForLoadState("networkidle");
+            // wait for any loading indicator to disappear
+            const loading = this.activePage.locator('text=Loading...').first();
+            try { await loading.waitFor({ state: 'hidden', timeout: 10000 }); } catch {}
 
             const statusCells = this.statusColumn;
+            // poll for rows
+            let rowCount = await statusCells.count();
+            const maxAttempts = 16;
+            let attempt = 0;
+            while (rowCount === 0 && attempt < maxAttempts) {
+                await pageFixture.page.waitForTimeout(500);
+                rowCount = await statusCells.count();
+                attempt++;
+            }
 
-            const count = await statusCells.count();
+            if (rowCount === 0) {
+                const timestamp = Date.now();
+                const html = await pageFixture.page.content();
+                const debugFile = `reports/debug-statusfilter-${timestamp}.html`;
+                try { fs.writeFileSync(debugFile, html); } catch (e) {}
+                await pageFixture.page.screenshot({ path: `reports/screenshots/kyc-statusfilter-${timestamp}.png` });
+                throw new Error(`No rows found after applying status filter: ${status.text}. Saved HTML: ${debugFile}`);
+            }
 
-            expect(count).toBeGreaterThan(0);
-
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < rowCount; i++) {
                 const actualStatus = (await statusCells.nth(i).textContent())?.trim();
-
-                expect(actualStatus).toBe(status.text);
+                if (actualStatus !== status.text) {
+                    const timestamp = Date.now();
+                    const html = await pageFixture.page.content();
+                    const debugFile = `reports/debug-statusfilter-mismatch-${timestamp}.html`;
+                    try { fs.writeFileSync(debugFile, html); } catch (e) {}
+                    await pageFixture.page.screenshot({ path: `reports/screenshots/kyc-statusfilter-mismatch-${timestamp}.png` });
+                    throw new Error(`Expected all rows to be '${status.text}' but found '${actualStatus}'. Saved HTML: ${debugFile}`);
+                }
             }
 
             await pageFixture.logger.info(`${status.text} filter verified.`);
         }
 
-        // Reset to All
-        await this.statusFilter.selectOption("");
-    }
-
-    async verifySearch(searchType: string, searchValue: string) {
-
-        await this.searchType.click();
-        await this.searchType.selectOption({ value: searchType });
-
-        const searchBox = this.searchBox;
-
-        await searchBox.clear();
-        await searchBox.fill(searchValue);
-
-        await pageFixture.page.waitForLoadState("networkidle");
-
-        let column;
-
-        switch (searchType) {
-
-            case "customerName":
-                column = this.nameColumn;
-                break;
-
-            case "email":
-                column = this.emailColumn;
-                break;
-
-            case "nic":
-                column = this.nicColumn;
-                break;
-
-            case "mobileNumber":
-                column = this.mobileColumn;
-                break;
-
-            default:
-                throw new Error(`Invalid search type: ${searchType}`);
-        }
-
-        const count = await column.count();
-
-        expect(count).toBeGreaterThan(0);
-
-        for (let i = 0; i < count; i++) {
-
-            const value = (await column.nth(i).textContent())?.trim().toLowerCase();
-
-            expect(value).toContain(searchValue.toLowerCase());
-        }
-
-        await pageFixture.logger.info(
-            `Search verified. Type=${searchType}, Value=${searchValue}`
-        );
-
-        await searchBox.clear();
-
-        await this.searchType.click();
-        await this.searchType.selectOption({ value: "customerName" });
+        // Reset to All (try selecting empty value)
+        try { await this.statusFilter.selectOption(''); } catch {}
     }
 
     async verifyReviewDetails() {

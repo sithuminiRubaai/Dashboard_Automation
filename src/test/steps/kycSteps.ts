@@ -1,21 +1,21 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import { pageFixture } from '../utils/pageFixture';
-import KYCPage from '../pageObjects/KYCPage';
-import { expect } from '@playwright/test';
 import LoginPage from '../pageObjects/LoginPage';
+import KYCPage from '../pageObjects/KYCPage';
 
-
-const kycPage = new KYCPage();
 const loginPage = new LoginPage();
+const kycPage = new KYCPage();
+
+// -------------------- Login --------------------
 
 Given('user is logged in to the admin dashboard', async function () {
-    await loginPage.enterEmailAndPassword('super_admin@gmail.com', 'Admin@2024!');
-    await loginPage.clickSubmit();
-    await pageFixture.page.waitForTimeout(5000);
+    await loginPage.login('super_admin@gmail.com', 'Admin@2024!');
     await loginPage.verifyAdminLoginSuccess();
-    pageFixture.logger.info('User is logged in to admin dashboard');
 
+    pageFixture.logger.info('User is logged in to the admin dashboard');
 });
+
+// -------------------- Navigation --------------------
 
 When('user clicks KYC Management', async function () {
     await kycPage.navigateToKYCRequests();
@@ -23,36 +23,45 @@ When('user clicks KYC Management', async function () {
 
 Then('verify KYC Requests heading is visible', async function () {
     await kycPage.verifyKycRequestsHeadingVisible();
-    console.log('KYC Requests heading is visible');
 });
 
 Then('verify summary cards are visible', async function () {
-    await kycPage.verifySummaryCardsVisible();
+    await kycPage.verifySummaryCards();
 });
 
-When('user filters KYC requests by status {string}', async function (status: string) {
-    await kycPage.filterKYCRequestsByStatus(status);
-});
+// -------------------- Status Filter --------------------
 
-Then('verify only {string} KYC requests are displayed', async function (status: string) {
-    await kycPage.verifyOnlyKYCRequestsWithStatus(status);
-});
+When(
+    'user filters KYC requests by status {string}',
+    async function (status: string) {
+        await kycPage.filterKYCRequestsByStatus(status);
+    }
+);
 
-When('user searches for KYC request by name {string}', async function (name: string) {
-    await kycPage.searchKYCRequestByName(name);
-});
+Then(
+    'verify only {string} KYC requests are displayed',
+    async function (status: string) {
+        await kycPage.verifyOnlyKYCRequestsWithStatus(status);
+    }
+);
 
-When('user searches for KYC request by email {string}', async function (email: string) {
-    await kycPage.searchKYCRequestByEmail(email);
-});
+// -------------------- Search --------------------
 
-Then('verify search results contain only matching names', async function () {
-    await kycPage.verifySearchResultsWithMatchingNames();
-});
+When(
+    'user searches by {string} using value {string}',
+    async function (searchType: string, searchValue: string) {
+        await kycPage.verifySearch(searchType, searchValue);
+    }
+);
 
-Then('verify search results contain only matching emails', async function () {
-    await kycPage.verifySearchResultsWithMatchingEmails();
-});
+Then(
+    'verify search results are displayed for {string}',
+    async function (searchValue: string) {
+        await kycPage.verifySearchResultsDisplayed(searchValue);
+    }
+);
+
+// -------------------- Review Details --------------------
 
 When('user selects first KYC request from the list', async function () {
     await kycPage.selectFirstKYCRequest();
@@ -70,21 +79,31 @@ Then('verify documents section is displayed', async function () {
     await kycPage.verifyDocumentsSectionVisible();
 });
 
-Then('verify KYC details contain name, father name, mother name, NIC, and address', async function () {
-    await kycPage.verifyRequiredKYCDetailsVisible();
-});
+Then(
+    'verify KYC details contain name, father name, mother name, NIC, and address',
+    async function () {
+        await kycPage.verifyRequiredKYCDetailsVisible();
+    }
+);
 
 Then('verify all required document fields are visible', async function () {
     await kycPage.verifyRequiredDocumentFieldsVisible();
 });
 
-Then('verify document status is either {string} or {string}', async function (status1: string, status2: string) {
-    await kycPage.verifyCustomerStatus();
+Then('verify document status is either Verified, Rejected, or Pending', async () => {
+
+    const allowedStatuses = [
+        'Verified',
+        'Rejected',
+        'Pending'
+    ];
+
+    const actualStatus = await kycPage.getDocumentStatus();
+
+    expect(allowedStatuses).toContain(actualStatus);
 });
 
-Then('verify search results are displayed for {string}', async function (searchName: string) {
-    await kycPage.verifySearchResultsDisplayed(searchName);
-});
+// -------------------- Search Result --------------------
 
 When('user clicks on first search result', async function () {
     await kycPage.clickFirstSearchResult();
@@ -93,3 +112,22 @@ When('user clicks on first search result', async function () {
 Then('verify applicant name is {string}', async function (expectedName: string) {
     await kycPage.verifyApplicantName(expectedName);
 });
+
+Then('close the Review Details popup', async function () {
+    await kycPage.closeReviewDetailsPopup();
+})
+
+
+function expect(actual: any) {
+    return {
+        toContain(expected: any) {
+            if (!Array.isArray(actual)) {
+                throw new Error(`Expected an array but received ${typeof actual}`);
+            }
+            if (!actual.includes(expected)) {
+                throw new Error(`Expected ${JSON.stringify(actual)} to contain ${JSON.stringify(expected)}`);
+            }
+        }
+    };
+}
+
