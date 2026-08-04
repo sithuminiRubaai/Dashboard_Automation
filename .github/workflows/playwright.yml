@@ -1,38 +1,49 @@
-name: Playwright Cucumber Tests
+import { Browser, BrowserContext, chromium, firefox, webkit } from '@playwright/test';
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+let browser: Browser;
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+export async function invokeBrowser(): Promise<Browser> {
+    const browserType = process.env.BROWSER || 'chromium';
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    switch (browserType.toLowerCase()) {
+        case 'firefox':
+            browser = await firefox.launch({
+                headless: process.env.HEADLESS !== 'false',
+            });
+            break;
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
+        case 'webkit':
+            browser = await webkit.launch({
+                headless: process.env.HEADLESS !== 'false',
+            });
+            break;
 
-      - name: Install Dependencies
-        run: npm ci
+        default:
+            browser = await chromium.launch({
+                headless: process.env.HEADLESS !== 'false',
+                args: ['--no-sandbox', '--disable-dev-shm-usage'],
+            });
+            break;
+    }
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+    return browser;
+}
 
-      - name: Run Cucumber Tests
-        run: npx cucumber-js
+export async function createBrowserContext(): Promise<BrowserContext> {
+    if (!browser) {
+        browser = await invokeBrowser();
+    }
 
-      - name: Upload Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cucumber-report
-          path: reports/
-          retention-days: 30
+    return await browser.newContext({
+        viewport: {
+            width: 1920,
+            height: 1080,
+        },
+    });
+}
+
+export async function closeBrowser(): Promise<void> {
+    if (browser) {
+        await browser.close();
+    }
+}
