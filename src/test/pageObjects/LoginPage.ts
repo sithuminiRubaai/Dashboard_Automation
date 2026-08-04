@@ -2,7 +2,9 @@ import { pageFixture } from "../utils/pageFixture";
 import {
     expectContainsText,
     expectText,
-    expectVisible
+    expectVisible,
+    captureAndThrow,
+    withPageAction
 } from "../utils/common";
 
 export default class LoginPage {
@@ -75,13 +77,7 @@ export default class LoginPage {
             pageFixture.logger.info("Admin login successful");
 
         } catch (error) {
-
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/login-success-${Date.now()}.png`
-            });
-
-            pageFixture.logger.error(`Admin login failed: ${error}`);
-            throw new Error("Admin login verification failed.");
+            await captureAndThrow('login-success', error, 'Admin login verification failed.');
         }
     }
 
@@ -103,16 +99,7 @@ export default class LoginPage {
             pageFixture.logger.info("Login error message verified.");
 
         } catch (error) {
-
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/login-error-${Date.now()}.png`
-            });
-
-            pageFixture.logger.error(`Login error verification failed: ${error}`);
-
-            throw new Error(
-                "Expected login error message was not displayed."
-            );
+            await captureAndThrow('login-error', error, 'Expected login error message was not displayed.');
         }
     }
 
@@ -125,14 +112,7 @@ export default class LoginPage {
             pageFixture.logger.info("Successfully logged out.");
 
         } catch (error) {
-
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/logout-${Date.now()}.png`
-            });
-
-            pageFixture.logger.error(`Logout failed: ${error}`);
-
-            throw new Error("Logout failed.");
+            await captureAndThrow('logout', error, 'Logout failed.');
         }
     }
 }

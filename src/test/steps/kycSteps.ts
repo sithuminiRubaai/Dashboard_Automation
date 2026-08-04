@@ -58,6 +58,16 @@ Then(
     'verify search results are displayed for {string}',
     async function (searchValue: string) {
         await kycPage.verifySearchResultsDisplayed(searchValue);
+        await kycPage.clearSearchField(); // Clear the search field after verification
+    }
+);
+
+Then(
+    'verify no search results are displayed with message {string}',
+    async function (message: string) {
+        await kycPage.verifyNoSearchResultsDisplayed(message);
+        await kycPage.clearSearchField();
+
     }
 );
 

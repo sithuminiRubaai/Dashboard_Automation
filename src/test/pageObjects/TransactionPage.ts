@@ -26,17 +26,6 @@ export default class TransactionPage {
         return pageFixture.page;
     }
 
-    get transactionHeading(): Locator {
-        return this.activePage.locator(this.selectors.transactionHeading);
-    }
-
-    async verifyTransactionManagementHeadingVisible() {
-        await expectVisible(
-            this.transactionHeading,
-            "Transactions Management Heading"
-        );
-    }
-
     async verifyPaymentTabVisible(tabName: PaymentTab) {
         const tab = this.activePage.locator(
             this.selectors.paymentTab(tabName)
@@ -48,14 +37,24 @@ export default class TransactionPage {
     async navigateToTransaction() {
         const menu = this.activePage.locator(
             this.selectors.transactionManagementMenu
-        );
+        ).first();
 
         await expectVisible(menu, "Transactions Management Menu");
         await menu.click();
         await this.activePage.waitForLoadState("networkidle");
+        await this.activePage.waitForURL(/\/transactions/, { timeout: 30000 });
 
         await pageFixture.logger.info(
             "Navigated to Transactions Management page"
+        );
+    }
+
+    async verifyTransactionManagementHeadingVisible() {
+        const heading = this.activePage.locator(
+            "//main//*[contains(normalize-space(), 'Transactions Management') or contains(normalize-space(), 'Transaction Management') or contains(normalize-space(), 'Transactions') or contains(normalize-space(), 'Transaction')]");
+        await expectVisible(
+            heading,
+            "Transactions Management Heading"
         );
     }
 

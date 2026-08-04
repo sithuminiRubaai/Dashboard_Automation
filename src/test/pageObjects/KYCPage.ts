@@ -1,7 +1,7 @@
 import { pageFixture } from "../utils/pageFixture";
-import fs from 'fs';
+import * as fs from 'fs';
 import { expect, Locator, Page } from "@playwright/test";
-import { expectCountGreaterThan, expectText, expectVisible, expectContainsText } from '../utils/common';
+import { expectCountGreaterThan, expectText, expectVisible, expectContainsText, expectRowsHaveExactStatus, withPageAction, captureAndThrow } from '../utils/common';
 
 export default class KYCPage {
     readonly page: Page;
@@ -16,6 +16,9 @@ export default class KYCPage {
         status: 7,
         notes: 8,
     };
+    private get clearSearchButton(): Locator {
+        return this.activePage.locator("//button[@aria-label='Clear search']");
+    }
 
     get totalRequestsCard(): Locator {
         return this.activePage.getByText('Total Requests');
@@ -60,7 +63,7 @@ export default class KYCPage {
     }
 
     get statusFilterControl(): Locator {
-        return this.activePage.locator("//select[contains(@class, 'w-full rounded-lg border')]");
+        return this.activePage.locator("//label[normalize-space()='KYC Status']/following-sibling::select");
     }
 
     get statusColumn(): Locator {
@@ -68,8 +71,9 @@ export default class KYCPage {
     }
 
     get searchType(): Locator {
-       return this.activePage.locator("//select[starts-with(@class,'rounded-lg border')]");
+       return this.activePage.locator("//label[normalize-space()='Search']/following::select[1]");
     }
+    
 
     get searchBoxName(): Locator {
         return this.activePage.locator("//input[@placeholder='Search by name...']");
@@ -149,16 +153,11 @@ export default class KYCPage {
     }
 
     async navigateToKYCRequests() {
-        try {
+        return withPageAction('kyc-navigation', async () => {
             await this.kycManagementMenu.click();
             await pageFixture.logger.info("Clicked KYC Management and navigated to KYC Requests page");
             await pageFixture.page.waitForLoadState("networkidle");
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-navigation-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, 'Failed to navigate to KYC Requests page');
     }
 
     async verifyKycRequestsHeadingVisible() {
@@ -220,48 +219,50 @@ export default class KYCPage {
         await pageFixture.logger.info("Summary cards verified successfully.");
     }
 
+    async clearSearchField() {
+    await this.clearSearchButton.waitFor({ state: 'visible' });
+    await this.clearSearchButton.click();
+
+    pageFixture.logger.info("Clicked Clear Search button.");
+    await pageFixture.page.reload();
+    await pageFixture.page.waitForLoadState('networkidle');
+}
+
     async filterKYCRequestsByStatus(status: string) {
-        try {
+        return withPageAction('kyc-filter', async () => {
+            const expectedValue = status.toUpperCase();
             await this.statusFilterControl.click();
             await this.selectDropdownOption(this.statusFilter, { label: status });
-            await pageFixture.page.waitForLoadState("networkidle");
+            await expect(this.statusFilter).toHaveValue(expectedValue);
+            await this.waitForFilteredStatusRows(status);
             await pageFixture.logger.info(`Filtered KYC requests by status: ${status}`);
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-filter-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, `Failed to filter KYC requests by status: ${status}`);
     }
 
     async verifyOnlyKYCRequestsWithStatus(status: string) {
-        try {
-            await this.verifyStatusFilter();
+        return withPageAction('kyc-status-verify', async () => {
+            await expect(this.statusFilter).toHaveValue(status.toUpperCase());
+            await this.waitForFilteredStatusRows(status);
             await pageFixture.logger.info(`Verified only ${status} KYC requests are displayed`);
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-status-verify-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, `Failed to verify KYC requests status filter: ${status}`);
+    }
+
+    async waitForFilteredStatusRows(status: string) {
+        const rows = this.activePage.locator('tbody tr');
+        await expectRowsHaveExactStatus(rows, this.statusColumn, status, 'filter-status');
     }
 
     async searchKYCRequestByName(name: string) {
-        try {
+        return withPageAction('kyc-search-name', async () => {
             const searchBoxName = this.searchBoxName;
             await searchBoxName.fill(name);
             await pageFixture.page.waitForLoadState("networkidle");
             pageFixture.logger.info(`Searched for KYC request by name: ${name}`);
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-search-name-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, `Failed to search KYC request by name: ${name}`);
     }
 
     async searchKYCRequestByEmail(email: string) {
-        try {
+        return withPageAction('kyc-search-email', async () => {
             const searchTypeDropdown = this.searchType;
             if (await searchTypeDropdown.isVisible()) {
                 await searchTypeDropdown.click();
@@ -272,26 +273,16 @@ export default class KYCPage {
             await searchBoxEmail.fill(email);
             await pageFixture.page.waitForLoadState("networkidle");
             await pageFixture.logger.info(`Searched for KYC request by email: ${email}`);
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-search-email-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, `Failed to search KYC request by email: ${email}`);
     }
 
     async verifySearchResultsWithMatchingNames() {
-        try {
+        return withPageAction('kyc-search-names', async () => {
             const rows = pageFixture.page.locator("tbody tr");
             const count = await rows.count();
             expect(count).toBeGreaterThan(0);
             await pageFixture.logger.info(`Verified ${count} search results with matching names`);
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-search-results-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, 'Failed to verify search results with matching names');
     }
     async closeReviewDetailsPopup() {
     await this.closeReviewDetailsButton.click();
@@ -299,17 +290,12 @@ export default class KYCPage {
    }
 
     async verifySearchResultsWithMatchingEmails() {
-        try {
+        return withPageAction('kyc-search-emails', async () => {
             const rows = pageFixture.page.locator("tbody tr");
             const count = await rows.count();
             expect(count).toBeGreaterThan(0);
             await pageFixture.logger.info(`Verified ${count} search results with matching emails`);
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-search-email-results-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, 'Failed to verify search results with matching emails');
     }
 
 async verifySearch(searchType: string, searchValue: string) {
@@ -323,23 +309,8 @@ async verifySearch(searchType: string, searchValue: string) {
 
     await searchBox.press('Enter');
 
-    // await this.verifyFirstRowValue(searchType, searchValue);
 }
 
-async verifyFirstRowValue(searchType: string, expectedValue: string) {
-  const columnIndex = this.columnMap[searchType];
-  if (!columnIndex) {
-    throw new Error(`Unknown searchType: ${searchType}`);
-  }
-
-const firstCell = this.activePage.locator(`xpath=//tbody/tr[1]/td[${columnIndex}]`);
-await expect(firstCell).toBeVisible();
-
-const actualValue = (await firstCell.textContent())?.trim() || '';
-console.log(`Search Type: "${searchType}" | Expected: "${expectedValue}" | Actual Cell Value: "${actualValue}"`);
-
-expect(actualValue).toBe(expectedValue);
-}
 
     async selectFirstKYCRequest() {
         const firstRow = pageFixture.page.locator("tbody tr").first();
@@ -349,120 +320,95 @@ expect(actualValue).toBe(expectedValue);
     }
 
     async clickReviewDetailsButton() {
-        try {
+        return withPageAction('kyc-review-button', async () => {
             const reviewButton = this.reviewDetailsButton;
             await reviewButton.click();
             await pageFixture.page.waitForLoadState("networkidle");
             await pageFixture.logger.info("Clicked on Review Details button");
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-review-button-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, 'Failed to click Review Details button');
     }
 
     async verifyPersonalDetailsSectionVisible() {
-        try {
+        return withPageAction('kyc-personal-details', async () => {
             const personalDetailsHeader = this.personalDetailsHeader;
             await expect(personalDetailsHeader).toBeVisible();
             await pageFixture.logger.info("Personal details section is visible");
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-personal-details-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, 'Failed to verify personal details section');
     }
 
     async verifyDocumentsSectionVisible() {
-        try {
+        return withPageAction('kyc-documents', async () => {
             const documentsHeader = this.documentsHeader;
             await expect(documentsHeader).toBeVisible();
             await pageFixture.logger.info("Documents section is visible");
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-documents-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, 'Failed to verify documents section');
     }
 
     async verifyRequiredKYCDetailsVisible() {
-    try {
-        await expect(this.fatherName).toBeVisible();
-        await expect(this.motherName).toBeVisible();
-        await expect(this.dateOfBirth).toBeVisible();
-        await expect(this.nicNumber).toBeVisible();
-        await expect(this.nicIssuedDate).toBeVisible();
-        await expect(this.address).toBeVisible();
-        await expect(this.nicNumber).toBeVisible();
-        await expect(this.kycSubmittedDate).toBeVisible();
+        return withPageAction('kyc-details-visible', async () => {
+            await expect(this.fatherName).toBeVisible();
+            await expect(this.motherName).toBeVisible();
+            await expect(this.dateOfBirth).toBeVisible();
+            await expect(this.nicNumber).toBeVisible();
+            await expect(this.nicIssuedDate).toBeVisible();
+            await expect(this.address).toBeVisible();
+            await expect(this.nicNumber).toBeVisible();
+            await expect(this.kycSubmittedDate).toBeVisible();
 
-        const fatherNameValue = await this.activePage
-            .locator('//span[normalize-space()="Father Name"]/following-sibling::span')
-            .innerText();
+            const fatherNameValue = await this.activePage
+                .locator('//span[normalize-space()="Father Name"]/following-sibling::span')
+                .innerText();
 
-        const motherNameValue = await this.activePage
-            .locator('//span[normalize-space()="Mother Name"]/following-sibling::span')
-            .innerText();
+            const motherNameValue = await this.activePage
+                .locator('//span[normalize-space()="Mother Name"]/following-sibling::span')
+                .innerText();
 
-        const DOBValue = await this.activePage
-            .locator('//span[normalize-space()="Date of Birth"]/following-sibling::span')
-            .innerText();
+            const DOBValue = await this.activePage
+                .locator('//span[normalize-space()="Date of Birth"]/following-sibling::span')
+                .innerText();
 
-        const nicValue = await this.activePage
-            .locator('//span[normalize-space()="NIC Number"]/following-sibling::span')
-            .innerText();
+            const nicValue = await this.activePage
+                .locator('//span[normalize-space()="NIC Number"]/following-sibling::span')
+                .innerText();
 
-        const nicIssueDateValue = await this.activePage
-            .locator('//span[normalize-space()="NIC Issued Date"]/following-sibling::span')
-            .innerText();   
+            const nicIssueDateValue = await this.activePage
+                .locator('//span[normalize-space()="NIC Issued Date"]/following-sibling::span')
+                .innerText();   
 
-        const addressValue = await this.activePage
-            .locator('//span[normalize-space()="Address"]/following-sibling::span')
-            .innerText();
-        const KYCSubmittedDateValue = await this.activePage
-            .locator('//span[normalize-space()="NIC Issued Date"]/following-sibling::span')
-            .innerText();      
+            const addressValue = await this.activePage
+                .locator('//span[normalize-space()="Address"]/following-sibling::span')
+                .innerText();
+            const KYCSubmittedDateValue = await this.activePage
+                .locator('//span[normalize-space()="NIC Issued Date"]/following-sibling::span')
+                .innerText();      
 
-        console.log("Father Name:", fatherNameValue);
-        console.log("Mother Name:", motherNameValue);
-        console.log("NIC:", nicValue);
-        console.log("NIC Issued Date:", nicIssueDateValue);
-        console.log("Date of Birth:", DOBValue);
-        console.log("Address:", addressValue);
-        console.log("KYC Submitted Date:", KYCSubmittedDateValue);
+            console.log("Father Name:", fatherNameValue);
+            console.log("Mother Name:", motherNameValue);
+            console.log("NIC:", nicValue);
+            console.log("NIC Issued Date:", nicIssueDateValue);
+            console.log("Date of Birth:", DOBValue);
+            console.log("Address:", addressValue);
+            console.log("KYC Submitted Date:", KYCSubmittedDateValue);
 
-        pageFixture.logger.info("All required KYC details are visible");
-    } catch (error) {
-        await pageFixture.page.screenshot({
-            path: `reports/screenshots/kyc-details-error-${Date.now()}.png`
-        });
-        throw error;
+            pageFixture.logger.info("All required KYC details are visible");
+        }, 'Failed to verify required KYC details are visible');
     }
-}
     async verifyRequiredDocumentFieldsVisible() {
-    try {
-        const documentImages = pageFixture.page.locator('img');
+        return withPageAction('kyc-required-document-fields', async () => {
+            const documentImages = pageFixture.page.locator('img');
 
-        await expect(documentImages).toHaveCount(3);
+            await expect(documentImages).toHaveCount(3);
 
-        for (let i = 0; i < await documentImages.count(); i++) {
-            await expect(documentImages.nth(i)).toBeVisible();
-        }
+            for (let i = 0; i < await documentImages.count(); i++) {
+                await expect(documentImages.nth(i)).toBeVisible();
+            }
 
-        await pageFixture.logger.info("Verified all document images are visible.");
-    } catch (error) {
-        await pageFixture.page.screenshot({
-            path: `reports/screenshots/kyc-document-fields-error-${Date.now()}.png`
-        });
-        throw error;
+            await pageFixture.logger.info("Verified all required document images are visible.");
+        }, 'Failed to verify required document fields are visible');
     }
-}
 
 async getDocumentStatus(): Promise<string> {
-    try {
+    return withPageAction('kyc-document-status', async () => {
         await expect(this.customerStatusLabel).toBeVisible();
 
         const status = (await this.customerStatusLabel.textContent())?.trim();
@@ -475,58 +421,61 @@ async getDocumentStatus(): Promise<string> {
         console.log(`Document status is: ${status}`);
 
         return status;
-
-    } catch (error) {
-        await pageFixture.page.screenshot({
-            path: `reports/screenshots/document-status-${Date.now()}.png`
-        });
-
-        pageFixture.logger.error(`Failed to get document status: ${error}`);
-        throw error;
-    }
+    }, 'Failed to get document status');
 }
 
 
     async verifySearchResultsDisplayed(searchName: string) {
-        try {
+        return withPageAction('kyc-search-display', async () => {
             const rows = pageFixture.page.locator("tbody tr");
             const count = await rows.count();
             expect(count).toBeGreaterThan(0);
             await pageFixture.logger.info(`Verified search results are displayed for: ${searchName}`);
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-search-display-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, `Failed to verify search results are displayed for: ${searchName}`);
+    }
+
+    async verifyNoSearchResultsDisplayed(message: string) {
+        return withPageAction('kyc-no-search-results', async () => {
+            const noResultsSelector = 'tbody tr td[colspan="9"]';
+            const noResults = pageFixture.page.locator(noResultsSelector);
+            await noResults.waitFor({ state: 'visible', timeout: 15000 });
+
+            const maxAttempts = 30;
+            let lastText = '';
+
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                lastText = (await noResults.textContent())?.trim() ?? '';
+                if (lastText === message) {
+                    await pageFixture.logger.info(`Verified no search results are displayed with message: ${message}`);
+                    return;
+                }
+                if (lastText !== 'Loading...') {
+                    break;
+                }
+                await pageFixture.page.waitForTimeout(500);
+            }
+
+            await expect(noResults).toHaveText(message, { timeout: 15000 });
+            await pageFixture.logger.info(`Verified no search results are displayed with message: ${message}`);
+        }, `Failed to verify no search results message: ${message}`);
     }
 
     async clickFirstSearchResult() {
-        try {
+        return withPageAction('kyc-click-first-search-result', async () => {
             const firstResult = pageFixture.page.locator("tbody tr").first();
             await firstResult.click();
             await pageFixture.page.waitForLoadState("networkidle");
             await pageFixture.logger.info("Clicked on first search result");
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-first-result-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, 'Failed to click first search result');
     }
 
     async verifyApplicantName(expectedName: string) {
-        try {
+        return withPageAction('kyc-applicant-name', async () => {
             const nameField = pageFixture.page.locator('[class*="name"]').first();
             const actualName = await nameField.textContent();
             expect(actualName).toContain(expectedName);
             await pageFixture.logger.info(`Verified applicant name: ${expectedName}`);
-        } catch (error) {
-            await pageFixture.page.screenshot({
-                path: `reports/screenshots/kyc-applicant-name-error-${Date.now()}.png`
-            });
-            throw error;
-        }
+        }, `Failed to verify applicant name: ${expectedName}`);
     }
 
     async verifyStatusFilter() {
