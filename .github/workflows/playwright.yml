@@ -1,46 +1,33 @@
-import { Browser, BrowserContext, chromium, firefox, webkit } from 'playwright';
+name: Playwright Tests
 
-let browser: Browser | null = null;
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-export async function invokeBrowser(): Promise<Browser> {
-  const browserType = (process.env.BROWSER ?? 'chromium').toLowerCase();
-  const headless = process.env.HEADLESS !== 'false';
+jobs:
+  test:
+    name: Playwright tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
 
-  if (browser) return browser;
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
-  switch (browserType) {
-    case 'firefox':
-      browser = await firefox.launch({ headless });
-      break;
+      - name: Install dependencies
+        run: npm ci
 
-    case 'webkit':
-      browser = await webkit.launch({ headless });
-      break;
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
 
-    default:
-      browser = await chromium.launch({
-        headless,
-        args: ['--no-sandbox', '--disable-dev-shm-usage'],
-      });
-      break;
-  }
-
-  return browser;
-}
-
-export async function createBrowserContext(): Promise<BrowserContext> {
-  const b = browser ?? (await invokeBrowser());
-  return await b.newContext({
-    viewport: {
-      width: 1920,
-      height: 1080,
-    },
-  });
-}
-
-export async function closeBrowser(): Promise<void> {
-  if (browser) {
-    await browser.close();
-    browser = null;
-  }
-}
+      - name: Run Playwright tests
+        run: npx playwright test --project ${{ matrix.browser }}
+        env:
+          CI: true
