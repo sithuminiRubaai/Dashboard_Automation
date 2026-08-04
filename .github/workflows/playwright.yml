@@ -1,49 +1,46 @@
-import { Browser, BrowserContext, chromium, firefox, webkit } from '@playwright/test';
+import { Browser, BrowserContext, chromium, firefox, webkit } from 'playwright';
 
-let browser: Browser;
+let browser: Browser | null = null;
 
 export async function invokeBrowser(): Promise<Browser> {
-    const browserType = process.env.BROWSER || 'chromium';
+  const browserType = (process.env.BROWSER ?? 'chromium').toLowerCase();
+  const headless = process.env.HEADLESS !== 'false';
 
-    switch (browserType.toLowerCase()) {
-        case 'firefox':
-            browser = await firefox.launch({
-                headless: process.env.HEADLESS !== 'false',
-            });
-            break;
+  if (browser) return browser;
 
-        case 'webkit':
-            browser = await webkit.launch({
-                headless: process.env.HEADLESS !== 'false',
-            });
-            break;
+  switch (browserType) {
+    case 'firefox':
+      browser = await firefox.launch({ headless });
+      break;
 
-        default:
-            browser = await chromium.launch({
-                headless: process.env.HEADLESS !== 'false',
-                args: ['--no-sandbox', '--disable-dev-shm-usage'],
-            });
-            break;
-    }
+    case 'webkit':
+      browser = await webkit.launch({ headless });
+      break;
 
-    return browser;
+    default:
+      browser = await chromium.launch({
+        headless,
+        args: ['--no-sandbox', '--disable-dev-shm-usage'],
+      });
+      break;
+  }
+
+  return browser;
 }
 
 export async function createBrowserContext(): Promise<BrowserContext> {
-    if (!browser) {
-        browser = await invokeBrowser();
-    }
-
-    return await browser.newContext({
-        viewport: {
-            width: 1920,
-            height: 1080,
-        },
-    });
+  const b = browser ?? (await invokeBrowser());
+  return await b.newContext({
+    viewport: {
+      width: 1920,
+      height: 1080,
+    },
+  });
 }
 
 export async function closeBrowser(): Promise<void> {
-    if (browser) {
-        await browser.close();
-    }
+  if (browser) {
+    await browser.close();
+    browser = null;
+  }
 }
