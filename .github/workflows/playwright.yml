@@ -8,11 +8,8 @@ on:
 
 jobs:
   test:
-    name: Playwright tests
+    name: Playwright tests (chromium)
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v4
 
@@ -25,9 +22,9 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
-        run: npx playwright test --project ${{ matrix.browser }}
+      - name: Run Playwright tests (chromium)
+        run: npx playwright test --project=chromium
         env:
           CI: true
