@@ -1,2 +1,0 @@
-src/test/features/login.feature:4:10:17:34:35:36
-src/test/features/kyc.feature:9:13:22:30:47:48:49:50:53:62
