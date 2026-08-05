@@ -112,23 +112,29 @@ export async function expectRowsHaveExactStatus(
             }
         }
 
-        if (!loaded) {
+        if (!loaded || !allMatch) {
             await pageFixture.page.waitForTimeout(retryDelay);
             continue;
         }
 
-        if (allMatch) {
-            await pageFixture.logger.info(`${context}: verified ${lastRowCount} rows with status '${expectedText}'`);
-            return;
-        }
+        await pageFixture.logger.info(`${context}: verified ${lastRowCount} rows with status '${expectedText}'`);
+        return;
+    }
 
+    if (lastRowCount === 0) {
         const timestamp = Date.now();
         const html = await pageFixture.page.content();
         const debugFile = `reports/debug-${context}-mismatch-${timestamp}.html`;
         try { fs.writeFileSync(debugFile, html); } catch (e) {}
         await pageFixture.page.screenshot({ path: `reports/screenshots/${context}-mismatch-${timestamp}.png` });
-        throw new Error(`${context}: Expected all rows to be '${expectedText}' but found '${actualStatus}'. Saved HTML: ${debugFile}`);
+        throw new Error(`${context}: no rows found to verify status '${expectedText}'. Saved HTML: ${debugFile}`);
     }
 
-    throw new Error(`${context}: timed out waiting for ${expectedText} rows. Last row count: ${lastRowCount}`);
+    const actualStatus = (await statusCells.nth(Math.max(0, lastRowCount - 1)).textContent())?.trim() ?? 'UNKNOWN';
+    const timestamp = Date.now();
+    const html = await pageFixture.page.content();
+    const debugFile = `reports/debug-${context}-mismatch-${timestamp}.html`;
+    try { fs.writeFileSync(debugFile, html); } catch (e) {}
+    await pageFixture.page.screenshot({ path: `reports/screenshots/${context}-mismatch-${timestamp}.png` });
+    throw new Error(`${context}: Expected all rows to be '${expectedText}' but found '${actualStatus}'. Saved HTML: ${debugFile}`);
 }

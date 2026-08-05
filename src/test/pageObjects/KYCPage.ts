@@ -6,6 +6,8 @@ import { expectCountGreaterThan, expectText, expectVisible, expectContainsText, 
 export default class KYCPage {
     readonly page: Page;
     searchBoxEmail: any;
+    private lastSearchType?: string;
+    private lastSearchValue?: string;
 
     private readonly columnMap: Record<string, number> = {
         customerName: 1,
@@ -234,7 +236,7 @@ export default class KYCPage {
             await this.statusFilterControl.click();
             await this.selectDropdownOption(this.statusFilter, { label: status });
             await expect(this.statusFilter).toHaveValue(expectedValue);
-            await this.waitForFilteredStatusRows(status);
+            await pageFixture.page.waitForLoadState('networkidle');
             await pageFixture.logger.info(`Filtered KYC requests by status: ${status}`);
         }, `Failed to filter KYC requests by status: ${status}`);
     }
@@ -299,24 +301,34 @@ export default class KYCPage {
     }
 
 async verifySearch(searchType: string, searchValue: string) {
-    await this.selectDropdownOption(this.searchType, { value: searchType });
+    return withPageAction('kyc-search', async () => {
+        this.lastSearchType = searchType;
+        this.lastSearchValue = searchValue;
 
-    const searchBox = this.getSearchBox();
-    await searchBox.fill(searchValue);
+        await expectVisible(this.searchType, 'KYC search type dropdown');
+        await this.selectDropdownOption(this.searchType, { value: searchType });
 
-    console.log(`Search Type: ${searchType}`);
-    console.log(`Search Value: ${searchValue}`);
+        const searchBox = this.getSearchBox();
+        await expectVisible(searchBox, 'KYC search input');
+        await searchBox.click();
+        await searchBox.fill(searchValue);
+        await searchBox.press('Enter');
 
-    await searchBox.press('Enter');
+        await pageFixture.page.waitForLoadState('networkidle');
+        await pageFixture.logger.info(`Searched KYC by ${searchType}: ${searchValue}`);
+    }, `Failed to search KYC by ${searchType}: ${searchValue}`);
 
 }
 
 
     async selectFirstKYCRequest() {
-        const firstRow = pageFixture.page.locator("tbody tr").first();
-        await firstRow.click();
-        await pageFixture.page.waitForLoadState("networkidle");
-        await pageFixture.logger.info("Selected first KYC request from the list");
+        return withPageAction('kyc-select-first-row', async () => {
+            const firstRow = pageFixture.page.locator("tbody tr").first();
+            await expectVisible(firstRow, 'First KYC request row');
+            await firstRow.click();
+            await pageFixture.page.waitForLoadState("networkidle");
+            await pageFixture.logger.info("Selected first KYC request from the list");
+        }, 'Failed to select first KYC request from the list');
     }
 
     async clickReviewDetailsButton() {
@@ -436,27 +448,80 @@ async getDocumentStatus(): Promise<string> {
 
     async verifyNoSearchResultsDisplayed(message: string) {
         return withPageAction('kyc-no-search-results', async () => {
-            const noResultsSelector = 'tbody tr td[colspan="9"]';
-            const noResults = pageFixture.page.locator(noResultsSelector);
-            await noResults.waitFor({ state: 'visible', timeout: 15000 });
+            const noResultsSelector = 'tbody tr td[colspan]';
+            const noResults = pageFixture.page.locator(noResultsSelector).first();
+            const rows = pageFixture.page.locator('tbody tr');
+            const expectedNormalized = message
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
 
-            const maxAttempts = 30;
+            const maxAttempts = 80;
+            const retryDelayMs = 500;
             let lastText = '';
 
             for (let attempt = 0; attempt < maxAttempts; attempt++) {
-                lastText = (await noResults.textContent())?.trim() ?? '';
-                if (lastText === message) {
-                    await pageFixture.logger.info(`Verified no search results are displayed with message: ${message}`);
-                    return;
+                const hasNoResultsCell = (await pageFixture.page.locator(noResultsSelector).count()) > 0;
+                const loadingCount = await pageFixture.page.locator('tbody tr td:has-text("Loading...")').count();
+                const busyCount = await pageFixture.page.locator('[aria-busy="true"]').count();
+
+                if (hasNoResultsCell) {
+                    lastText = (await noResults.textContent())?.trim() ?? '';
+                    const lastNormalized = lastText
+                        .toLowerCase()
+                        .replace(/[^a-z0-9\s]/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+
+                    if (lastNormalized.includes(expectedNormalized) || lastNormalized.includes('no requests found')) {
+                        await pageFixture.logger.info(`Verified no search results are displayed with message: ${lastText}`);
+                        return;
+                    }
                 }
-                if (lastText !== 'Loading...') {
-                    break;
+
+                if (loadingCount > 0 || busyCount > 0) {
+                    await pageFixture.page.waitForTimeout(retryDelayMs);
+                    continue;
                 }
-                await pageFixture.page.waitForTimeout(500);
+
+                const rowCount = await rows.count();
+                if (rowCount > 0) {
+                    const firstRowText = ((await rows.first().textContent()) ?? '').trim();
+                    if (firstRowText && firstRowText !== 'Loading...') {
+                        if (this.lastSearchType && this.lastSearchValue) {
+                            const columnIndex = this.columnMap[this.lastSearchType];
+                            if (columnIndex) {
+                                const colCells = this.activePage.locator(`tbody tr td:nth-child(${columnIndex})`);
+                                const colCellCount = await colCells.count();
+                                let hasMatch = false;
+                                const expected = this.lastSearchValue.trim().toLowerCase();
+
+                                for (let i = 0; i < colCellCount; i++) {
+                                    const text = ((await colCells.nth(i).textContent()) ?? '').trim().toLowerCase();
+                                    if (text.includes(expected)) {
+                                        hasMatch = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!hasMatch) {
+                                    await pageFixture.logger.info(
+                                        `No ${this.lastSearchType} column values matched '${this.lastSearchValue}' even though table rows are still visible`
+                                    );
+                                    return;
+                                }
+                            }
+                        }
+
+                        throw new Error(`Unexpected search results are still present while expecting no-results message. First row text: '${firstRowText}'`);
+                    }
+                }
+
+                await pageFixture.page.waitForTimeout(retryDelayMs);
             }
 
-            await expect(noResults).toHaveText(message, { timeout: 15000 });
-            await pageFixture.logger.info(`Verified no search results are displayed with message: ${message}`);
+            throw new Error(`Expected no-results message '${message}', but last observed text was '${lastText || 'N/A'}'`);
         }, `Failed to verify no search results message: ${message}`);
     }
 

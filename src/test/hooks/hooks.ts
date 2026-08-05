@@ -21,6 +21,18 @@ let context: BrowserContext;
 let page: Page;
 let currentFeatureName: string | null = null;
 
+async function ensureBrowserContext() {
+    if (!browser || !browser.isConnected()) {
+        browser = await invokeBrowser();
+    }
+
+    if (!context) {
+        context = await browser.newContext({
+            viewport: { width: 1920, height: 1080 }
+        });
+    }
+}
+
 BeforeAll(async function () {
     getENV();
 
@@ -47,30 +59,35 @@ BeforeAll(async function () {
 Before(async function ({ pickle }) {
     const featureName = pickle.uri?.split(/[\\/]/).pop()?.replace(/\.feature$/, "") || "default";
 
-    if (currentFeatureName !== featureName) {
-        if (page) {
-            await page.close();
-        }
-
-        page = await context.newPage();
-        pageFixture.page = page;
-        currentFeatureName = featureName;
-
-        const loginUrl = getLoginUrl();
-        await page.goto(loginUrl, {
-            waitUntil: "networkidle"
-        });
-
-        pageFixture.logger = createLogger(options(pickle.name));
-        pageFixture.logger.info(`Started feature ${featureName} in the shared browser session`);
-    } else {
-        pageFixture.page = page;
-        pageFixture.logger = createLogger(options(pickle.name));
+    if (page && !page.isClosed()) {
+        await page.close();
     }
+
+    await ensureBrowserContext();
+
+    try {
+        page = await context.newPage();
+    } catch {
+        context = await browser.newContext({
+            viewport: { width: 1920, height: 1080 }
+        });
+        page = await context.newPage();
+    }
+
+    pageFixture.page = page;
+    currentFeatureName = featureName;
+
+    const loginUrl = getLoginUrl();
+    await page.goto(loginUrl, {
+        waitUntil: "networkidle"
+    });
+
+    pageFixture.logger = createLogger(options(pickle.name));
+    pageFixture.logger.info(`Started feature ${featureName} in the shared browser session`);
 });
 
 After(async function ({ pickle, result }) {
-    if (result?.status === Status.FAILED) {
+    if (result?.status === Status.FAILED && page && !page.isClosed()) {
         const screenshot = await page.screenshot({
             path: `./test-result/screenshot/${pickle.name}.png`,
             fullPage: true
@@ -81,7 +98,9 @@ After(async function ({ pickle, result }) {
 });
 
 AfterAll(async function () {
-    await page?.close();
+    if (page && !page.isClosed()) {
+        await page.close();
+    }
     await context?.close();
     await browser?.close();
 });

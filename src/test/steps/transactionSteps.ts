@@ -25,3 +25,43 @@ Then(
         await transactionPage.verifyPaymentTabVisible(paymentTab);
     }
 );
+
+When('user searches transactions for {string}', async function (searchValue: string) {
+    await transactionPage.searchTransactions(searchValue);
+});
+
+Then('verify transaction search results are displayed for {string}', async function (searchValue: string) {
+    await transactionPage.verifyTransactionSearchResultsDisplayed(searchValue);
+});
+
+Then('verify no transaction search results are displayed for {string}', async function (searchValue: string) {
+    await transactionPage.verifyNoTransactionSearchResultsDisplayed(searchValue);
+});
+
+When('user filters transactions by status {string}', async function (status: string) {
+    await transactionPage.filterTransactionsByStatus(status);
+});
+
+When('user filters transactions by date range {string}', async function (dateRange: string) {
+    await transactionPage.filterTransactionsByDateRange(dateRange as 'today' | '7days' | '30days');
+});
+
+Then('verify transaction date range filter is applied to {string}', async function (dateRange: string) {
+    await transactionPage.verifyTransactionDateFilterApplied(dateRange as 'today' | '7days' | '30days');
+});
+
+Then('verify only {string} transactions are displayed', async function (status: string) {
+    await transactionPage.verifyOnlyTransactionsWithStatus(status);
+});
+
+When("user selects the first transaction row", async function () {
+    await transactionPage.selectFirstTransaction();
+});
+
+Then("verify selected transaction details are displayed", async function () {
+    await transactionPage.verifySelectedTransactionDetailsVisible();
+});
+
+Then("close the transaction details popup", async function () {
+    await transactionPage.closeTransactionDetailsPopup();
+});
