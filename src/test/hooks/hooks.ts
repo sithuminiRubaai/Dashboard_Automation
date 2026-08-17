@@ -17,73 +17,48 @@ import { options } from "../utils/logger";
 setDefaultTimeout(60 * 1000);
 
 let browser: Browser;
-let context: BrowserContext;
-let page: Page;
-let currentFeatureName: string | null = null;
-
-async function ensureBrowserContext() {
-    if (!browser || !browser.isConnected()) {
-        browser = await invokeBrowser();
-    }
-
-    if (!context) {
-        context = await browser.newContext({
-            viewport: { width: 1920, height: 1080 }
-        });
-    }
-}
+let context: BrowserContext | undefined;
+let page: Page | undefined;
+let currentFeatureName: string | undefined;
 
 BeforeAll(async function () {
     getENV();
 
     browser = await invokeBrowser();
-
-    context = await browser.newContext({
-        viewport: { width: 1920, height: 1080 }
-    });
-
-    page = await context.newPage();
-
-    pageFixture.page = page;
     pageFixture.logger = createLogger(options("BeforeAll"));
-
-    const loginUrl = getLoginUrl();
-
-    await page.goto(loginUrl, {
-        waitUntil: "networkidle"
-    });
-
-    pageFixture.logger.info(`Opened browser and navigated to ${loginUrl}`);
+    pageFixture.logger.info("Opened the shared browser");
 });
 
 Before(async function ({ pickle }) {
     const featureName = pickle.uri?.split(/[\\/]/).pop()?.replace(/\.feature$/, "") || "default";
 
-    if (page && !page.isClosed()) {
-        await page.close();
+    if (!browser?.isConnected()) {
+        throw new Error(
+            "The shared browser was closed before the test run completed."
+        );
     }
 
-    await ensureBrowserContext();
+    if (currentFeatureName !== featureName) {
+        await page?.close();
+        await context?.close();
 
-    try {
-        page = await context.newPage();
-    } catch {
         context = await browser.newContext({
             viewport: { width: 1920, height: 1080 }
         });
         page = await context.newPage();
+        currentFeatureName = featureName;
+
+        const loginUrl = getLoginUrl();
+        await page.goto(loginUrl, { waitUntil: "networkidle" });
+    }
+
+    if (!page || page.isClosed()) {
+        throw new Error(`The browser page for feature ${featureName} is unavailable.`);
     }
 
     pageFixture.page = page;
-    currentFeatureName = featureName;
-
-    const loginUrl = getLoginUrl();
-    await page.goto(loginUrl, {
-        waitUntil: "networkidle"
-    });
-
     pageFixture.logger = createLogger(options(pickle.name));
-    pageFixture.logger.info(`Started feature ${featureName} in the shared browser session`);
+    pageFixture.logger.info(`Started scenario in the shared ${featureName} feature context`);
 });
 
 After(async function ({ pickle, result }) {

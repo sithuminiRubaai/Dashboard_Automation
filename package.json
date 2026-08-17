@@ -6,6 +6,10 @@
   "scripts": {
     "pretest": "npx ts-node src/helper/init.ts",
     "test": "cucumber-js -p default",
+    "test:dev": "cross-env ENV=dev npm test",
+    "test:uat": "cross-env ENV=uat npm test",
+    "test:staging": "cross-env ENV=staging npm test",
+    "test:all": "node scripts/run-all-environments.js",
     "posttest": "npx ts-node src/test/utils/report.ts",
     "test:failed": "cucumber-js -p rerun @rerun.txt"
   },

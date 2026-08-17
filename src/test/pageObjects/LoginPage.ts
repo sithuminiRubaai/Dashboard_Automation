@@ -1,10 +1,11 @@
 import { pageFixture } from "../utils/pageFixture";
+import { expect } from "@playwright/test";
+import { getLoginUrl } from "../../helper/config";
 import {
     expectContainsText,
     expectText,
     expectVisible,
-    captureAndThrow,
-    withPageAction
+    captureAndThrow
 } from "../utils/common";
 
 export default class LoginPage {
@@ -58,6 +59,15 @@ export default class LoginPage {
         await this.enterEmail(email);
         await this.enterPassword(password);
         await this.clickSubmit();
+    }
+
+    async verifyCurrentEnvironmentUrl() {
+        const expectedUrl = getLoginUrl();
+
+        await expect(pageFixture.page).toHaveURL(expectedUrl);
+        pageFixture.logger.info(
+            `Verified ${process.env.ENV || 'dev'} environment URL: ${expectedUrl}`
+        );
     }
 
     // Valid Login Verification
