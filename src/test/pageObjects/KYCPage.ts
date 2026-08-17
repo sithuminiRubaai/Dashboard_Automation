@@ -1,7 +1,7 @@
 import { pageFixture } from "../utils/pageFixture";
 import * as fs from 'fs';
 import { expect, Locator, Page } from "@playwright/test";
-import { expectCountGreaterThan, expectText, expectVisible, expectContainsText, expectRowsHaveExactStatus, withPageAction, captureAndThrow } from '../utils/common';
+import { expectVisible, expectRowsHaveExactStatus, withPageAction } from '../utils/common';
 
 export default class KYCPage {
     readonly page: Page;
