@@ -21,6 +21,13 @@ Given('user is logged in to the admin dashboard', async function () {
         await loginPage.login('super_admin@gmail.com', 'Admin@2024!');
         await loginPage.verifyAdminLoginSuccess();
     } else {
+        const authenticatedNavigation = page.locator(
+            "a[href='/transactions'], a[href*='/dashboard']"
+        ).first();
+        await authenticatedNavigation.or(dashboardHeading).waitFor({
+            state: 'visible',
+            timeout: 30000
+        });
         await dashboardHeading.waitFor({ state: 'visible', timeout: 30000 });
     }
 
