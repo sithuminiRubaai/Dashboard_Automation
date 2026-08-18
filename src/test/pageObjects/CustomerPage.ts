@@ -1096,26 +1096,6 @@ export default class CustomerPage {
     );
     }
 
-    private getStatusFilterPattern(
-    status: string
-): RegExp {
-    switch (status.toLowerCase()) {
-        case "all":
-            return /^All$/i;
-
-        case "enabled":
-            return /^Enabled$/i;
-
-        case "disabled":
-            return /^Disabled$/i;
-
-        default:
-            throw new Error(
-                `Unsupported customer status filter: ${status}`
-            );
-    }
-}
-
 async selectCustomerStatusFilter(
     status: string
 ): Promise<void> {

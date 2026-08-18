@@ -6,7 +6,7 @@ declare global{
     namespace NodeJS{
         interface processEnv{
             BROWSER: "chrome" | "firefox" | "webkit"
-            ENV: "stag" | "test" | "prod"
+            ENV: "dev" | "uat" | "stag" | "staging"
             LOGIN_URL: string
         }
     }

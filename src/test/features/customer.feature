@@ -1,15 +1,16 @@
 Feature: Customer Management
 
-  Background:
+  @functional
+  Scenario: Verify that Customer Management page is accessible and displays customer records
     Given administrator is logged in for Customer Management
     When user clicks Customer Management
     Then verify Customer Management heading is visible
 
-  @smoke @customer
+  @functional
   Scenario: Verify Customer Management page is displayed
     Then verify customer records table is visible
 
-  @regression @customer
+  @functional
   Scenario: Verify customer search functionality
     When user searches for customer by name "Nimesha"
     Then verify customer search results contain "Nimesha"
@@ -22,7 +23,7 @@ Feature: Customer Management
     And user searches for customer by nic "995680719V"
     Then verify customer search results contain "995680719V"
 
-  @smoke @customer
+  @functional
   Scenario: Verify customer details and verification section
     When user searches for customer by name "Nimesha"
     And user opens the first customer record
@@ -31,7 +32,7 @@ Feature: Customer Management
     And verify required customer details are displayed
     Then close the customer details popup
 
-   @regression @customer @customerFilter
+  @functional
   Scenario: Filter customer records by account status
     When user clears the customer search
     And user selects the "All" customer status filter
@@ -43,7 +44,7 @@ Feature: Customer Management
     When user selects the "Disabled" customer status filter
     Then verify customer records match the "Disabled" status filter
 
-      @regression @customer
+      @functional
   Scenario: Disable and re-enable a customer account
     When user clears the customer search
     And user selects the "Enabled" customer status filter

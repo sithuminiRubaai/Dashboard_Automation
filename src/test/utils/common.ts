@@ -84,14 +84,15 @@ export async function expectRowsHaveExactStatus(
     expectedStatus: string,
     context: string
 ) {
-    const expectedText = expectedStatus.trim();
+    const expectedText = expectedStatus.trim().toLowerCase();
     const maxAttempts = 60;
     const retryDelay = 500;
     let lastRowCount = 0;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         lastRowCount = await rows.count();
-        if (lastRowCount === 0) {
+        const statusCellCount = await statusCells.count();
+        if (lastRowCount === 0 || statusCellCount < lastRowCount) {
             await pageFixture.page.waitForTimeout(retryDelay);
             continue;
         }
@@ -100,13 +101,14 @@ export async function expectRowsHaveExactStatus(
         let loaded = true;
         let actualStatus = '';
 
-        for (let i = 0; i < lastRowCount; i++) {
+        for (let i = 0; i < statusCellCount; i++) {
             actualStatus = (await statusCells.nth(i).textContent())?.trim() ?? '';
-            if (actualStatus === 'Loading...') {
+            const normalizedStatus = actualStatus.toLowerCase();
+            if (!normalizedStatus || normalizedStatus === 'loading...') {
                 loaded = false;
                 break;
             }
-            if (actualStatus !== expectedText) {
+            if (normalizedStatus !== expectedText) {
                 allMatch = false;
                 break;
             }

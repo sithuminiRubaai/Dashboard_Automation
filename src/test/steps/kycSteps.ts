@@ -9,8 +9,27 @@ const kycPage = new KYCPage();
 // -------------------- Login --------------------
 
 Given('user is logged in to the admin dashboard', async function () {
-    await loginPage.login('super_admin@gmail.com', 'Admin@2024!');
-    await loginPage.verifyAdminLoginSuccess();
+    const page = pageFixture.page;
+    const emailInput = page.locator('#email');
+    const dashboardHeading = page.locator('h1').filter({ hasText: /Dashboard/i }).first();
+
+    const loginPageVisible = await emailInput
+        .isVisible({ timeout: 3000 })
+        .catch(() => false);
+
+    if (loginPageVisible) {
+        await loginPage.login('super_admin@gmail.com', 'Admin@2024!');
+        await loginPage.verifyAdminLoginSuccess();
+    } else {
+        const authenticatedNavigation = page.locator(
+            "a[href='/transactions'], a[href*='/dashboard']"
+        ).first();
+        await authenticatedNavigation.or(dashboardHeading).waitFor({
+            state: 'visible',
+            timeout: 30000
+        });
+        await dashboardHeading.waitFor({ state: 'visible', timeout: 30000 });
+    }
 
     pageFixture.logger.info('User is logged in to the admin dashboard');
 });

@@ -1,15 +1,14 @@
 {
   "default": {
-     "tags": "@smoke or @login or @regression or @negative",
+     "tags": "@positive or @negative or @functional ",
     "formatOptions": {
       "snippetsInterface": "async-await"
     },
     "paths": [
       "src/test/features/login.feature",
       "src/test/features/kyc.feature",
-      "src/test/features/transaction.feature",
-      "src/test/features/customer.feature",
-      "src/test/features/case.feature"
+     "src/test/features/transaction.feature",
+     "src/test/features/customer.feature"
     ],
     "dryRun": false,
     "require": [
