@@ -8,7 +8,8 @@ module.exports = {
             "src/test/features/login.feature",
             "src/test/features/kyc.feature",
             "src/test/features/transaction.feature",
-            "src/test/features/customer.feature"
+            "src/test/features/customer.feature",
+            "src/test/features/case.feature"
         ],
         publishQuite: true,
         dryRun: false,
