@@ -5,9 +5,8 @@
       "snippetsInterface": "async-await"
     },
     "paths": [
-    
-      "src/test/features/customer.feature"
-
+      "src/test/features/login.feature",
+      "src/test/features/kyc.feature"
 
     ],
     "dryRun": false,

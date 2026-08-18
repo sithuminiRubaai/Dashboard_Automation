@@ -28,6 +28,7 @@ Given('user is logged in to the admin dashboard', async function () {
             state: 'visible',
             timeout: 30000
         });
+        await dashboardHeading.waitFor({ state: 'visible', timeout: 30000 });
     }
 
     pageFixture.logger.info('User is logged in to the admin dashboard');
