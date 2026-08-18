@@ -13,6 +13,7 @@ import { getENV } from "../../helper/env/env";
 import { getLoginUrl } from "../../helper/config";
 import { createLogger } from "winston";
 import { options } from "../utils/logger";
+import { mkdir } from "fs/promises";
 
 setDefaultTimeout(60 * 1000);
 
@@ -63,6 +64,7 @@ Before(async function ({ pickle }) {
 
 After(async function ({ pickle, result }) {
     if (result?.status === Status.FAILED && page && !page.isClosed()) {
+        await mkdir("./test-result/screenshot", { recursive: true });
         const screenshot = await page.screenshot({
             path: `./test-result/screenshot/${pickle.name}.png`,
             fullPage: true

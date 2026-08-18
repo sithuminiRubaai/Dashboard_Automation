@@ -1,6 +1,7 @@
 Feature: Customer Management
 
-  Background:
+  @functional
+  Scenario: Verify that Customer Management page is accessible and displays customer records
     Given administrator is logged in for Customer Management
     When user clicks Customer Management
     Then verify Customer Management heading is visible

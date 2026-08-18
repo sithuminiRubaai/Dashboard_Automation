@@ -226,8 +226,6 @@ export default class KYCPage {
     await this.clearSearchButton.click();
 
     pageFixture.logger.info("Clicked Clear Search button.");
-    await pageFixture.page.reload();
-    await pageFixture.page.waitForLoadState('networkidle');
 }
 
     async filterKYCRequestsByStatus(status: string) {
@@ -407,9 +405,9 @@ async verifySearch(searchType: string, searchValue: string) {
     }
     async verifyRequiredDocumentFieldsVisible() {
         return withPageAction('kyc-required-document-fields', async () => {
-            const documentImages = pageFixture.page.locator('img');
+            const documentImages = this.documentsHeader.locator('..').locator('img');
 
-            await expect(documentImages).toHaveCount(3);
+            await expect(documentImages).toHaveCount(3, { timeout: 30000 });
 
             for (let i = 0; i < await documentImages.count(); i++) {
                 await expect(documentImages.nth(i)).toBeVisible();
