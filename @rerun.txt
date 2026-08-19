@@ -1,2 +1,0 @@
-src\test\features\login.feature:8:15:23:32:48
-src\test\features\kyc.feature:4:10:14:23:31:48:49:50:51:54:63
