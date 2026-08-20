@@ -2,6 +2,28 @@
 Feature: Case Management
 
   # ============================================================
+  # URL VERIFICATION
+  # ============================================================
+
+  @functional @url
+  Scenario: Verify Case Management page loads the correct URL for each tab
+    Given administrator is logged in to Case Management
+    When administrator navigates to Case Management
+    Then verify Case Management URL is loaded correctly
+
+    When administrator opens the Queue tab
+    Then verify Case Management URL is loaded correctly
+
+    When administrator opens the SLA tab
+    Then verify Case Management URL is loaded correctly
+
+    When administrator opens the Audit tab
+    Then verify Case Management URL is loaded correctly
+
+    When administrator opens the Reports tab
+    Then verify Case Management URL is loaded correctly
+
+  # ============================================================
   # CASE TYPE SWITCHING
   # ============================================================
 

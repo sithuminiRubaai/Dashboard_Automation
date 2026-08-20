@@ -7,6 +7,10 @@ Scenario: Verify that KYC Management page is accessible and displays KYC request
     Then verify KYC Requests heading is visible
 
 @functional
+Scenario: Verify KYC Management page loads the correct URL
+    Given verify KYC Management URL is loaded correctly
+
+@functional
 Scenario: Verify KYC Requests page is displayed
     And verify summary cards are visible
 

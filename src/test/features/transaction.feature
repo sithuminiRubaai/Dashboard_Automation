@@ -1,5 +1,16 @@
 Feature: Transaction Payment Tabs
 
+@functional
+Scenario: Verify Transaction Management page loads the correct URL for each payment tab
+    Given user is logged in to the admin dashboard
+    And user clicks Transaction Management
+    Then verify Transaction Management URL is loaded correctly
+    Then verify Transaction Management URL is loaded correctly for the "Top Up" payment tab
+    Then verify Transaction Management URL is loaded correctly for the "Withdraw" payment tab
+    Then verify Transaction Management URL is loaded correctly for the "QR Payment" payment tab
+    Then verify Transaction Management URL is loaded correctly for the "Bill Payment" payment tab
+    Then verify Transaction Management URL is loaded correctly for the "Fund Transfer" payment tab
+
 @functional 
 Scenario: User can navigate to Top Up payment tab
     Given user is logged in to the admin dashboard

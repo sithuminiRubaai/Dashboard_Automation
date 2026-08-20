@@ -40,6 +40,10 @@ When('user clicks KYC Management', async function () {
     await kycPage.navigateToKYCRequests();
 });
 
+Given('verify KYC Management URL is loaded correctly', async function () {
+    await kycPage.verifyPageUrl();
+});
+
 Then('verify KYC Requests heading is visible', async function () {
     await kycPage.verifyKycRequestsHeadingVisible();
 });

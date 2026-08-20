@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { pageFixture } from "../utils/pageFixture";
+import { getUserManagementUrl } from "../../helper/config";
 
 export default class UserManagementPage {
     private get activePage(): Page {
@@ -48,6 +49,18 @@ export default class UserManagementPage {
     async verifyHeadingVisible(): Promise<void> {
         await expect(this.userManagementHeading).toBeVisible({ timeout: 15000 });
         pageFixture.logger.info("User Management heading is visible");
+    }
+
+    async verifyPageUrl(): Promise<void> {
+        const expectedUrl = getUserManagementUrl();
+        await expect(this.activePage).toHaveURL(expectedUrl, { timeout: 15000 });
+        pageFixture.logger.info(`Verified User Management page URL: ${expectedUrl}`);
+    }
+
+    async verifyTabUrl(tab: string | RegExp): Promise<void> {
+        await this.activePage.getByRole("button", { name: tab }).click();
+        await this.verifyPageUrl();
+        pageFixture.logger.info(`Verified URL is unchanged for tab: ${tab}`);
     }
 
     async verifyRegistryVisible(): Promise<void> {
