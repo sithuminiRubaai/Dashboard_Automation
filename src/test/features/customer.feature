@@ -7,6 +7,10 @@ Feature: Customer Management
     Then verify Customer Management heading is visible
 
   @functional
+  Scenario: Verify Customer Management page loads the correct URL
+    Then verify Customer Management URL is loaded correctly
+
+  @functional
   Scenario: Verify Customer Management page is displayed
     Then verify customer records table is visible
 

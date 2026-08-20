@@ -2,6 +2,7 @@ import { pageFixture } from "../utils/pageFixture";
 import * as fs from 'fs';
 import { expect, Locator, Page } from "@playwright/test";
 import { expectVisible, expectRowsHaveExactStatus, withPageAction } from '../utils/common';
+import { getKycManagementUrl } from "../../helper/config";
 
 export default class KYCPage {
     readonly page: Page;
@@ -160,6 +161,12 @@ export default class KYCPage {
             await pageFixture.logger.info("Clicked KYC Management and navigated to KYC Requests page");
             await pageFixture.page.waitForLoadState("networkidle");
         }, 'Failed to navigate to KYC Requests page');
+    }
+
+    async verifyPageUrl(): Promise<void> {
+        const expectedUrl = getKycManagementUrl();
+        await expect(this.activePage).toHaveURL(expectedUrl, { timeout: 15000 });
+        pageFixture.logger.info(`Verified KYC Management page URL: ${expectedUrl}`);
     }
 
     async verifyKycRequestsHeadingVisible() {

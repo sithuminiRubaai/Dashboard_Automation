@@ -4,7 +4,7 @@
       "snippetsInterface": "async-await"
     },
     "paths": [
-      "src/test/features/case.feature"
+      "src/test/features/customer.feature"
     ],
     "dryRun": false,
     "require": [

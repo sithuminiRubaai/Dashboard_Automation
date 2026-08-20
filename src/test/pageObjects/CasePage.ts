@@ -9,6 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { pageFixture } from "../utils/pageFixture";
+import { getCaseManagementUrl } from "../../helper/config";
 export default class CasePage {
 
     private get activePage(): Page {
@@ -765,6 +766,12 @@ export default class CasePage {
     // =========================================================
     // NAVIGATE TO CASE MANAGEMENT
     // =========================================================
+
+    async verifyPageUrl(): Promise<void> {
+        const expectedUrl = getCaseManagementUrl();
+        await expect(this.activePage).toHaveURL(expectedUrl, { timeout: 15000 });
+        pageFixture.logger.info(`Verified Case Management page URL: ${expectedUrl}`);
+    }
 
     async navigateToCaseManagement():
         Promise<void> {

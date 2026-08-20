@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { pageFixture } from "../utils/pageFixture";
+import { getCustomerManagementUrl } from "../../helper/config";
 
 export default class CustomerPage {
     private get activePage(): Page {
@@ -92,6 +93,12 @@ export default class CustomerPage {
         pageFixture.logger.info(
             "Navigated to Customer Management page"
         );
+    }
+
+    async verifyPageUrl(): Promise<void> {
+        const expectedUrl = getCustomerManagementUrl();
+        await expect(this.activePage).toHaveURL(expectedUrl, { timeout: 15000 });
+        pageFixture.logger.info(`Verified Customer Management page URL: ${expectedUrl}`);
     }
 
     async verifyCustomerManagementHeading(): Promise<void> {

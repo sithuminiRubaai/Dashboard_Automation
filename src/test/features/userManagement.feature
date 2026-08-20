@@ -7,6 +7,12 @@ Feature: User Management
     Then verify User Management heading is visible
 
   @functional
+  Scenario: Verify User Management page loads the correct URL for each tab
+    Then verify User Management URL is loaded correctly
+    Then verify User Management URL is loaded correctly for the "Overview" tab
+    Then verify User Management URL is loaded correctly for the "Roles & Permissions" tab
+
+  @functional
   Scenario: Verify admin user registry and tabs
     Then verify admin user registry is visible
     And verify User Management tabs are visible

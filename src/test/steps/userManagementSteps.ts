@@ -27,6 +27,17 @@ Then("verify User Management heading is visible", async function () {
     await userManagementPage.verifyHeadingVisible();
 });
 
+Then("verify User Management URL is loaded correctly", async function () {
+    await userManagementPage.verifyPageUrl();
+});
+
+Then(
+    "verify User Management URL is loaded correctly for the {string} tab",
+    async function (tab: string) {
+        await userManagementPage.verifyTabUrl(tab);
+    }
+);
+
 Then("verify admin user registry is visible", async function () {
     await userManagementPage.verifyRegistryVisible();
 });
