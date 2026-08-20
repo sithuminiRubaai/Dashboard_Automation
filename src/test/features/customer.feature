@@ -8,7 +8,7 @@ Feature: Customer Management
 
   @functional
   Scenario: Verify Customer Management page loads the correct URL
-    Then verify Customer Management URL is loaded correctly
+    Given verify Customer Management URL is loaded correctly
 
   @functional
   Scenario: Verify Customer Management page is displayed

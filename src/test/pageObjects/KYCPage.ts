@@ -65,12 +65,16 @@ export default class KYCPage {
         return this.statusFilterControl;
     }
 
+    
+
     get statusFilterControl(): Locator {
-        return this.activePage.locator("//label[normalize-space()='KYC Status']/following-sibling::select");
+        return this.activePage.locator("//select[option[@value='PENDING'] and option[@value='VERIFIED'] and option[@value='REJECTED']]");
     }
 
     get statusColumn(): Locator {
-        return this.activePage.locator('tbody tr td:nth-child(7)');
+        // The cell also contains retry metadata (for example, "Attempt 0 of 3").
+        // Target the badge so status assertions only compare the status itself.
+        return this.activePage.locator('tbody tr td:nth-child(7) span:first-child');
     }
 
     get searchType(): Locator {
@@ -149,6 +153,7 @@ export default class KYCPage {
     get closeReviewDetailsButton() {
     return this.activePage.locator("//button[contains(@class,'flex-shrink-0') and contains(@class,'rounded-full')]");
     }
+
  
 
     getKYCRequestsHeading() {
@@ -177,6 +182,8 @@ export default class KYCPage {
     // falls back to clicking custom dropdown and choosing visible option by text.
     async selectDropdownOption(dropdown: Locator, option: { value?: string; label?: string }) {
         const optionText = option.label ?? option.value;
+        await dropdown.click();
+
         try {
             const tag = await dropdown.evaluate((el: any) => el.tagName);
             if (tag && tag.toUpperCase() === 'SELECT') {
@@ -194,7 +201,6 @@ export default class KYCPage {
         }
 
         // Fallback for custom dropdowns
-        await dropdown.click();
         await pageFixture.page.waitForTimeout(200);
 
         if (!optionText) {
@@ -235,16 +241,23 @@ export default class KYCPage {
     pageFixture.logger.info("Clicked Clear Search button.");
 }
 
-    async filterKYCRequestsByStatus(status: string) {
-        return withPageAction('kyc-filter', async () => {
-            const expectedValue = status.toUpperCase();
-            await this.statusFilterControl.click();
-            await this.selectDropdownOption(this.statusFilter, { label: status });
-            await expect(this.statusFilter).toHaveValue(expectedValue);
-            await pageFixture.page.waitForLoadState('networkidle');
-            await pageFixture.logger.info(`Filtered KYC requests by status: ${status}`);
-        }, `Failed to filter KYC requests by status: ${status}`);
-    }
+   async filterKYCRequestsByStatus(status: string) {
+    return withPageAction('kyc-filter', async () => {
+        const expectedValue = status.toUpperCase();
+
+        await this.statusFilter.selectOption({
+            label: status
+        });
+
+        await expect(this.statusFilter).toHaveValue(expectedValue);
+
+        await pageFixture.page.waitForLoadState('networkidle');
+
+        await pageFixture.logger.info(
+            `Filtered KYC requests by status: ${status}`
+        );
+    }, `Failed to filter KYC requests by status: ${status}`);
+}
 
     async verifyOnlyKYCRequestsWithStatus(status: string) {
         return withPageAction('kyc-status-verify', async () => {

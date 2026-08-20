@@ -35,6 +35,16 @@ export default class FeeManagementPage {
         return this.activePage.locator("div.rounded-xl").filter({ hasText: providerName }).first();
     }
 
+    private tabButton(tab: string): Locator {
+        return this.activePage
+            .locator("button.whitespace-nowrap.border-b-2")
+            .filter({ hasText: new RegExp(`^${this.escapeRegExp(tab)}$`) });
+    }
+
+    private escapeRegExp(value: string): string {
+        return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
     async navigateToFeeManagement(): Promise<void> {
         await this.feeManagementMenu.waitFor({ state: "visible", timeout: 20000 });
         await this.feeManagementMenu.click();
@@ -61,18 +71,18 @@ export default class FeeManagementPage {
 
     async verifyTabsVisible(): Promise<void> {
         for (const tab of ["Overview", "Calculator", "Provider slabs", "Wallet fees", "Rules engine", "Fee ledger"]) {
-            await expect(this.activePage.getByRole("button", { name: tab, exact: true })).toBeVisible();
+            await expect(this.tabButton(tab)).toBeVisible();
         }
         pageFixture.logger.info("All Fee Management tabs are visible");
     }
 
     async openTab(tab: string): Promise<void> {
-        await this.activePage.getByRole("button", { name: tab, exact: true }).click();
+        await this.tabButton(tab).click();
         pageFixture.logger.info(`Opened Fee Management tab: ${tab}`);
     }
 
     async verifyTabActive(tab: string): Promise<void> {
-        const button = this.activePage.getByRole("button", { name: tab, exact: true });
+        const button = this.tabButton(tab);
         await expect(button).toHaveCSS("border-bottom-color", "rgb(99, 102, 241)");
         pageFixture.logger.info(`Verified tab is active: ${tab}`);
     }
@@ -181,7 +191,7 @@ export default class FeeManagementPage {
             const item = this.activePage.locator("div.flex.items-start.gap-3").filter({ hasText: label }).first();
             await expect(item).toBeVisible({ timeout: 15000 });
             await expect(item.getByText(code, { exact: true })).toBeVisible();
-            await expect(item.getByText(label, { exact: true })).toBeVisible();
+            await expect(item.getByText(label, { exact: true }).first()).toBeVisible();
         }
         pageFixture.logger.info(`Verified ${entries.length} transaction type guide entries`);
     }
