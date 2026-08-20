@@ -24,11 +24,11 @@ Given('user is logged in to the admin dashboard', async function () {
         const authenticatedNavigation = page.locator(
             "a[href='/transactions'], a[href*='/dashboard']"
         ).first();
-        await authenticatedNavigation.or(dashboardHeading).waitFor({
+        const authenticatedPage = authenticatedNavigation.or(dashboardHeading);
+        await authenticatedPage.waitFor({
             state: 'visible',
             timeout: 30000
         });
-        await dashboardHeading.waitFor({ state: 'visible', timeout: 30000 });
     }
 
     pageFixture.logger.info('User is logged in to the admin dashboard');

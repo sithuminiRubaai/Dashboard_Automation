@@ -56,7 +56,7 @@ Scenario Outline: Search KYC request with no matching results
 
 @functional
 Scenario: Filter KYC requests by status
-    When user filters KYC requests by status "Verified"
+    When user filters KYC requests by status "Verified" 
     Then verify only "Verified" KYC requests are displayed
     When user filters KYC requests by status "Pending"
     Then verify only "Pending" KYC requests are displayed
