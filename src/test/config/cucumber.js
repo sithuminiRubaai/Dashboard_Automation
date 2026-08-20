@@ -1,46 +1,65 @@
 module.exports = {
-    default:{
-        tags: process.env.npm_config_TAGS || "",
-        formateOptions:{
-            snippentInterface: "async-await"
+
+    default: {
+
+        formatOptions: {
+            snippetsInterface: "async-await"
         },
-        paths:[
-            "src/test/features/login.feature"
+
+        paths: [
+            "src/test/features/case.feature"
         ],
-        publishQuite: true,
+
         dryRun: false,
-        require:[
+
+        require: [
             "src/test/hooks/hooks.ts",
             "src/test/steps/*.ts"
         ],
-        requireModule:[
+
+        requireModule: [
             "ts-node/register"
         ],
-        format:[
+
+        format: [
+            "progress",
             "html:test-result/cucumber-report.html",
             "json:test-result/cucumber-report.json",
             "rerun:@rerun.txt"
         ],
+
+        timeout: 60000,
+
         parallel: 0
     },
-    rerun:{
-        formateOptions:{
-            "snippentInterface": "async-await"
+
+
+    rerun: {
+
+        formatOptions: {
+            snippetsInterface: "async-await"
         },
-        publishQuite: true,
+
         dryRun: false,
-        require:[
-            "src/test/steps/*.ts",
-            "src/test/utils/*.ts"
+
+        require: [
+            "src/test/hooks/hooks.ts",
+            "src/test/steps/*.ts"
         ],
-        requireModule:[
+
+        requireModule: [
             "ts-node/register"
         ],
-        format:[
+
+        format: [
+            "progress",
             "html:test-result/cucumber-report.html",
             "json:test-result/cucumber-report.json",
             "rerun:@rerun.txt"
         ],
+
+        timeout: 60000,
+
         parallel: 0
     }
-}
+};
