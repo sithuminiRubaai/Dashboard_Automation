@@ -94,6 +94,15 @@ When(
 );
 
 Then(
+    "verify Customer Management URL is loaded correctly",
+    async function () {
+        const customerPage = new CustomerPage();
+
+        await customerPage.verifyPageUrl();
+    }
+);
+
+Then(
     "verify Customer Management heading is visible",
     async function () {
         const customerPage = new CustomerPage();

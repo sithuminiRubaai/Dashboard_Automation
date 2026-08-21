@@ -12,6 +12,17 @@ Then("verify Transaction Management heading is visible", async function () {
     console.log("Transaction Management heading is visible");
 });
 
+Then("verify Transaction Management URL is loaded correctly", async function () {
+    await transactionPage.verifyPageUrl();
+});
+
+Then(
+    "verify Transaction Management URL is loaded correctly for the {string} payment tab",
+    async function (paymentTab: PaymentTab) {
+        await transactionPage.verifyTabUrl(paymentTab);
+    }
+);
+
 When(
     "user clicks the {string} payment tab",
     async function (paymentTab: PaymentTab) {

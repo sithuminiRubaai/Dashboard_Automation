@@ -1,10 +1,14 @@
 Feature: Customer Management
 
-  @functional
+  @functional @smoke
   Scenario: Verify that Customer Management page is accessible and displays customer records
     Given administrator is logged in for Customer Management
     When user clicks Customer Management
     Then verify Customer Management heading is visible
+
+  @functional @smoke
+  Scenario: Verify Customer Management page loads the correct URL
+    Given verify Customer Management URL is loaded correctly
 
   @functional
   Scenario: Verify Customer Management page is displayed
@@ -44,7 +48,7 @@ Feature: Customer Management
     When user selects the "Disabled" customer status filter
     Then verify customer records match the "Disabled" status filter
 
-      @functional
+  @functional
   Scenario: Disable and re-enable a customer account
     When user clears the customer search
     And user selects the "Enabled" customer status filter

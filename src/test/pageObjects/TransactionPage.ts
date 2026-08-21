@@ -1,6 +1,7 @@
 import { expect, Locator } from "@playwright/test";
 import { pageFixture } from "../utils/pageFixture";
 import { expectVisible, expectRowsHaveExactStatus, withPageAction } from "../utils/common";
+import { getTransactionsUrl } from "../../helper/config";
 
 export type PaymentTab =
     | "Top Up"
@@ -428,5 +429,17 @@ export default class TransactionPage {
 
         await expectVisible(tab, `${tabName} tab`);
         await tab.click();
+    }
+
+    async verifyPageUrl(): Promise<void> {
+        const expectedUrl = getTransactionsUrl();
+        await expect(this.activePage).toHaveURL(expectedUrl, { timeout: 15000 });
+        pageFixture.logger.info(`Verified Transactions page URL: ${expectedUrl}`);
+    }
+
+    async verifyTabUrl(tabName: PaymentTab): Promise<void> {
+        await this.clickPaymentTab(tabName);
+        await this.verifyPageUrl();
+        pageFixture.logger.info(`Verified URL is unchanged for tab: ${tabName}`);
     }
 }

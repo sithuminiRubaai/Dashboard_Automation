@@ -1,9 +1,9 @@
 
-# MoiPay Admin Dashboard Automation
+# Dashboard Automation
 
 ## Overview
 
-This repository contains the automated test framework for the MoiPay Admin Dashboard, developed using Playwright, Cucumber (BDD), and TypeScript. The framework is designed to support scalable, maintainable, and reliable end-to-end testing of the MoiPay administrative platform.
+This repository contains the automated test framework for the Admin Dashboard, developed using Playwright, Cucumber (BDD), and TypeScript. The framework is designed to support scalable, maintainable, and reliable end-to-end testing of the administrative platform.
 
 ## Objectives
 
@@ -88,7 +88,7 @@ This repository contains the automated test framework for the MoiPay Admin Dashb
 
 ```bash
 git clone <repository-url>
-cd Moipay_Admin_Dashboard_Automation
+cd Dashboard_Automation
 ```
 
 ### Install Dependencies
@@ -103,6 +103,30 @@ npm install
 
 ```bash
 npm test
+```
+
+### Execute Tests in Firefox
+
+```bash
+npm run test:firefox
+```
+
+### Execute Smoke Tests in Firefox
+
+```bash
+npm run test:smoke:firefox
+```
+
+### Execute Tests in Chromium, Then Firefox
+
+```bash
+npm run test:chromium-firefox
+```
+
+For smoke scenarios only:
+
+```bash
+npm run test:smoke:chromium-firefox
 ```
 
 ### Execute Specific Feature
@@ -136,11 +160,11 @@ npx playwright test --headed
 
 ## Contributors
 
-MoiPay Quality Assurance Team
+Quality Assurance Team
 
 ## License
 
-This project is intended for internal use within the MoiPay platform and its authorized development and QA teams.
+This project is intended for internal use within the platform and its authorized development and QA teams.
 =======
-# Moipay_Admin_Dashboard
+# Dashboard_Automation
 >>>>>>> 17a2e7bf1a8244f37072a355f1e72ca12b1c949a

@@ -9,6 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { pageFixture } from "../utils/pageFixture";
+import { getUserManagementUrl } from "../../helper/config";
 
 
 export default class UserManagementPage {

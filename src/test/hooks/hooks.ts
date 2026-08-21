@@ -65,8 +65,12 @@ Before(async function ({ pickle }) {
 After(async function ({ pickle, result }) {
     if (result?.status === Status.FAILED && page && !page.isClosed()) {
         await mkdir("./test-result/screenshot", { recursive: true });
+        const safeScenarioName = pickle.name
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, "-")
+            .replace(/[. ]+$/g, "")
+            .slice(0, 150) || "failed-scenario";
         const screenshot = await page.screenshot({
-            path: `./test-result/screenshot/${pickle.name}.png`,
+            path: `./test-result/screenshot/${safeScenarioName}.png`,
             fullPage: true
         });
 
