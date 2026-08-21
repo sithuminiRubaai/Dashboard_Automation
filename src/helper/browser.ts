@@ -7,7 +7,12 @@ const options: LaunchOptions = {
 };
 
 export const invokeBrowser = () => {
-    const browserType = process.env.npm_config_BROWSER || "chromium";
+    const browserType = (
+        process.env.BROWSER ||
+        process.env.npm_config_browser ||
+        process.env.npm_config_BROWSER ||
+        "chromium"
+    ).toLowerCase();
     switch (browserType) {
         case "chrome":
             return chromium.launch({ ...options, channel: "chrome" });
@@ -18,6 +23,8 @@ export const invokeBrowser = () => {
         case "webkit":
             return webkit.launch(options);
         default:
-            throw new Error("please provide valid Browser");
+            throw new Error(
+                `Unsupported browser '${browserType}'. Use chrome, chromium, firefox, or webkit.`
+            );
     }
 };

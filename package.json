@@ -9,6 +9,13 @@
     "test:dev": "cross-env ENV=dev npm test",
     "test:uat": "cross-env ENV=uat npm test",
     "test:staging": "cross-env ENV=staging npm test",
+    "test:chromium": "cross-env BROWSER=chromium cucumber-js -p default",
+    "test:firefox": "cross-env BROWSER=firefox cucumber-js -p default",
+    "test:chromium-firefox": "npm run test:chromium && npm run test:firefox",
+    "test:smoke:chromium": "cross-env BROWSER=chromium cucumber-js -p default --tags @smoke",
+    "test:smoke:firefox": "cross-env BROWSER=firefox cucumber-js -p default --tags @smoke",
+    "test:smoke:chromium-firefox": "npm run test:smoke:chromium && npm run test:smoke:firefox",
+    "format:features": "node scripts/format-feature-files.js",
     "test:all": "node scripts/run-all-environments.js",
     "posttest": "npx ts-node src/test/utils/report.ts",
     "test:failed": "cucumber-js -p rerun @rerun.txt"

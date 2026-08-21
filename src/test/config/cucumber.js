@@ -7,7 +7,12 @@ module.exports = {
         },
 
         paths: [
-            "src/test/features/case.feature"
+      "src/test/features/case.feature",
+      "src/test/features/customer.feature",
+      "src/test/features/feeManagement.feature",
+      "src/test/features/kyc.feature",
+      "src/test/features/transaction.feature",
+      "src/test/features/login.feature"
         ],
 
         dryRun: false,

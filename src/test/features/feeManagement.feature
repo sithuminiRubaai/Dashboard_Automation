@@ -1,18 +1,16 @@
 Feature: Fee Management
 
-  @functional
+  @functional @smoke
   Scenario: Verify Fee Management page is accessible
     Given administrator is logged in for Fee Management
     When user clicks Fee Management
     Then verify Fee Management heading is visible
 
-  @functional
+  @functional @smoke
   Scenario: Verify tab-wise navigation works correctly in Fee Management
-    Given administrator is logged in for Fee Management
-    When user clicks Fee Management
-    Then verify tab navigation works correctly for all Fee Management tabs
+    Given verify tab navigation works correctly for all Fee Management tabs
 
-  @functional
+  @functional @smoke
   Scenario: Verify Fee Management page loads the correct URL for each tab
     Given administrator is logged in for Fee Management
     When user clicks Fee Management
@@ -143,4 +141,3 @@ Feature: Fee Management
       | Bank portion          | Rs. 610.00 | Bank    | Rail pass-through      |
       | MoiPay revenue        | Rs. 905.00 | Revenue | Net margin             |
       | Avg fee / txn         | Rs. 0.00   |         | All transaction types  |
-

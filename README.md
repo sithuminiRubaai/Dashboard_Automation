@@ -105,6 +105,30 @@ npm install
 npm test
 ```
 
+### Execute Tests in Firefox
+
+```bash
+npm run test:firefox
+```
+
+### Execute Smoke Tests in Firefox
+
+```bash
+npm run test:smoke:firefox
+```
+
+### Execute Tests in Chromium, Then Firefox
+
+```bash
+npm run test:chromium-firefox
+```
+
+For smoke scenarios only:
+
+```bash
+npm run test:smoke:chromium-firefox
+```
+
 ### Execute Specific Feature
 
 ```bash

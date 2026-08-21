@@ -43,7 +43,7 @@ Then("verify Fee Management tabs are visible", async function () {
     await feeManagementPage.verifyTabsVisible();
 });
 
-Then("verify tab navigation works correctly for all Fee Management tabs", async function () {
+Given("verify tab navigation works correctly for all Fee Management tabs", async function () {
     await feeManagementPage.verifyTabNavigation([
         "Overview",
         "Calculator",

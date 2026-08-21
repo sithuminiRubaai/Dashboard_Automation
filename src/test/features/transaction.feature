@@ -1,7 +1,7 @@
 Feature: Transaction Payment Tabs
 
-@functional
-Scenario: Verify Transaction Management page loads the correct URL for each payment tab
+  @functional @smoke
+  Scenario: Verify Transaction Management page loads the correct URL for each payment tab
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management URL is loaded correctly
@@ -11,8 +11,8 @@ Scenario: Verify Transaction Management page loads the correct URL for each paym
     Then verify Transaction Management URL is loaded correctly for the "Bill Payment" payment tab
     Then verify Transaction Management URL is loaded correctly for the "Fund Transfer" payment tab
 
-@functional 
-Scenario: User can navigate to Top Up payment tab
+  @functional @smoke
+  Scenario: User can navigate to Top Up payment tab
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -22,8 +22,8 @@ Scenario: User can navigate to Top Up payment tab
     Then verify selected transaction details are displayed
     Then close the transaction details popup
 
-@functional
-Scenario: User can navigate to Withdraw payment tab
+  @functional @smoke
+  Scenario: User can navigate to Withdraw payment tab
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -33,8 +33,8 @@ Scenario: User can navigate to Withdraw payment tab
     Then verify selected transaction details are displayed
     Then close the transaction details popup
 
-@functional
-Scenario: User can navigate to QR Payment tab
+  @functional @smoke
+  Scenario: User can navigate to QR Payment tab
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -44,8 +44,8 @@ Scenario: User can navigate to QR Payment tab
     Then verify selected transaction details are displayed
     Then close the transaction details popup
 
-@functional
-Scenario: User can navigate to Bill Payment tab
+  @functional @smoke
+  Scenario: User can navigate to Bill Payment tab
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -55,8 +55,8 @@ Scenario: User can navigate to Bill Payment tab
     Then verify selected transaction details are displayed
     Then close the transaction details popup
 
-@functional
-Scenario: User can navigate to Fund Transfer tab
+  @functional @smoke
+  Scenario: User can navigate to Fund Transfer tab
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -66,8 +66,8 @@ Scenario: User can navigate to Fund Transfer tab
     Then verify selected transaction details are displayed
     Then close the transaction details popup
 
-@functional
-Scenario: User can view the first transaction details and close the popup
+  @functional
+  Scenario: User can view the first transaction details and close the popup
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -75,8 +75,8 @@ Scenario: User can view the first transaction details and close the popup
     Then verify selected transaction details are displayed
     Then close the transaction details popup
 
-@functional
-Scenario: User can search transaction by ID and view the first result details
+  @functional
+  Scenario: User can search transaction by ID and view the first result details
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -86,24 +86,24 @@ Scenario: User can search transaction by ID and view the first result details
     Then verify selected transaction details are displayed
     Then close the transaction details popup
 
-@functional
-Scenario: User can search by customer name and see matching transaction records
+  @functional
+  Scenario: User can search by customer name and see matching transaction records
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
     When user searches transactions for "Regana Selvaranjan"
     Then verify transaction search results are displayed for "Regana Selvaranjan"
 
-@functional
-Scenario: User can search by customer name "balu" and see no matching transaction records
+  @functional
+  Scenario: User can search by customer name "balu" and see no matching transaction records
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
     When user searches transactions for "doesnotexist"
     Then verify no transaction search results are displayed for "doesnotexist"
 
-@functional
-Scenario: User can filter transactions by multiple date ranges sequentially
+  @functional
+  Scenario: User can filter transactions by multiple date ranges sequentially
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -114,8 +114,8 @@ Scenario: User can filter transactions by multiple date ranges sequentially
     When user filters transactions by date range "Last 30 Days"
     Then verify transaction date range filter is applied to "Last 30 Days"
 
-@functional
-Scenario: User can filter transactions by multiple statuses sequentially
+  @functional
+  Scenario: User can filter transactions by multiple statuses sequentially
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -128,8 +128,8 @@ Scenario: User can filter transactions by multiple statuses sequentially
     When user filters transactions by status "All Statuses"
     Then verify only "All Statuses" transactions are displayed
 
-@functional
-Scenario Outline: User can filter transactions by date and status combinations
+  @functional
+  Scenario Outline: User can filter transactions by date and status combinations
     Given user is logged in to the admin dashboard
     And user clicks Transaction Management
     Then verify Transaction Management heading is visible
@@ -139,8 +139,7 @@ Scenario Outline: User can filter transactions by date and status combinations
     And verify only "<status>" transactions are displayed
 
     Examples:
-        | dateRange    | status  |
-        | Today        | Failed  |
-        | Last 7 Days  | Pending |
-        | Last 30 Days | Success |
-
+      | dateRange    | status  |
+      | Today        | Failed  |
+      | Last 7 Days  | Pending |
+      | Last 30 Days | Success |
