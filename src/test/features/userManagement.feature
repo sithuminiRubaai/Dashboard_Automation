@@ -1,12 +1,12 @@
 Feature: User Management
 
-  @functional
+  @functional @smoke
   Scenario: Verify User Management page is accessible
     Given administrator is logged in for User Management
     When user clicks User Management
     Then verify User Management heading is visible
 
-  @functional
+  @functional @smoke
   Scenario: Verify User Management page loads the correct URL for each tab
     Then verify User Management URL is loaded correctly
     Then verify User Management URL is loaded correctly for the "Overview" tab

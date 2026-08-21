@@ -1,11 +1,7 @@
 @case
 Feature: Case Management
 
-  # ============================================================
-  # URL VERIFICATION
-  # ============================================================
-
-  @functional @url
+  @functional @smoke
   Scenario: Verify Case Management page loads the correct URL for each tab
     Given administrator is logged in to Case Management
     When administrator navigates to Case Management
@@ -23,11 +19,7 @@ Feature: Case Management
     When administrator opens the Reports tab
     Then verify Case Management URL is loaded correctly
 
-  # ============================================================
-  # CASE TYPE SWITCHING
-  # ============================================================
-
-  @smoke @caseSwitch
+  @functional
   Scenario: Verify that the administrator can switch between Scam, Incident, and Support cases
 
     Given administrator is logged in to Case Management
@@ -45,12 +37,7 @@ Feature: Case Management
     When administrator switches to "Scam" cases
     Then verify "Scam" cases are displayed in the Queue
 
-
-  # ============================================================
-  # VIEW CASE RECORDS
-  # ============================================================
-
-  @regression @queueView
+  @functional
   Scenario: Verify that the administrator can view all case records
 
     Given administrator is logged in to Case Management
@@ -59,14 +46,7 @@ Feature: Case Management
 
     Then verify all case records are displayed in the Queue
 
-
-  # ============================================================
-  # SEARCH CASE RECORDS
-  # Search field supports:
-  # Reference | Title | Customer / Reporter
-  # ============================================================
-
-  @regression @queueSearch
+  @functional
   Scenario: Verify that the administrator can search case records using the available search criteria
 
     Given administrator is logged in to Case Management
@@ -91,12 +71,7 @@ Feature: Case Management
 
     When administrator clears the Queue search
 
-
-  # ============================================================
-  # FILTER CASE RECORDS
-  # ============================================================
-
-  @regression @queueFilter
+  @functional
   Scenario: Verify that the administrator can filter case records by status, priority, category, assigned agent, and SLA status
 
     Given administrator is logged in to Case Management
@@ -125,12 +100,7 @@ Feature: Case Management
 
     When administrator resets the Queue filters
 
-
-  # ============================================================
-  # REFRESH QUEUE
-  # ============================================================
-
-  @regression @queueRefresh
+  @functional
   Scenario: Verify that the administrator can refresh the case queue
 
     Given administrator is logged in to Case Management
@@ -143,11 +113,7 @@ Feature: Case Management
     When administrator refreshes the case Queue
     Then verify the case Queue refresh completed successfully
 
-    # ============================================================
-  # SLA MONITORING
-  # ============================================================
-
-  @regression @slaMonitoring
+  @functional
   Scenario: Verify that the administrator can view the SLA dashboard, SLA policies, and active-case SLA tracker
 
     Given administrator is logged in to Case Management
@@ -158,12 +124,7 @@ Feature: Case Management
     And verify SLA policies are displayed
     And verify the Active Cases SLA Tracker is displayed
 
-
-  # ============================================================
-  # AUDIT
-  # ============================================================
-
-  @regression @caseAudit
+  @functional
   Scenario: Verify that the administrator can view and search case audit records by case and action
 
     Given administrator is logged in to Case Management
@@ -181,11 +142,7 @@ Feature: Case Management
 
     When administrator clears the audit search
 
-      # ============================================================
-  # REPORTS
-  # ============================================================
-
-  @regression @caseReports
+  @functional
   Scenario: Verify that the administrator can export case reports and download all case data
 
     Given administrator is logged in to Case Management
